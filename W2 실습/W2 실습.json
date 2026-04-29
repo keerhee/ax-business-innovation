@@ -1,0 +1,480 @@
+{
+  "name": "W2 실습",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1YM440DTkoS8HoBIk9kS1MleS0_Rw7skQMDtP4RAtaIU",
+          "mode": "list",
+          "cachedResultName": "W2 실습 시트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YM440DTkoS8HoBIk9kS1MleS0_Rw7skQMDtP4RAtaIU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "연체관리",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YM440DTkoS8HoBIk9kS1MleS0_Rw7skQMDtP4RAtaIU/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        128
+      ],
+      "id": "948280bc-dea3-458e-8c73-91fbfc98c88d",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "1N0RwklN3InrKwNr",
+          "name": "GoogleSheet - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6de25bef-95fe-4d77-8e48-cb8fd96537ce",
+              "leftValue": "={{ $json['연체일수'] }}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "20c16265-acb2-4f13-929f-fdf1926a9a5b",
+              "leftValue": "={{ $json['연체일수'] }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        -32
+      ],
+      "id": "87901d76-d3d0-44e3-b877-ab7cc1989b27",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4dbb9da1-13b6-4771-a1a8-8ab70f6468af",
+              "name": "등급",
+              "value": "1등급 (경미)",
+              "type": "string"
+            },
+            {
+              "id": "a45d5e35-e0cf-4968-847f-8609b7692af3",
+              "name": "고객명",
+              "value": "={{ $json['고객명'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4464a45b-edd3-423c-9ad5-67603038712f",
+              "name": "이메일",
+              "value": "={{ $json['이메일'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ad4d7699-c6aa-44c3-a92c-3489f26e6b8d",
+              "name": "연체금액",
+              "value": "={{ $json['연체금액(만원)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "cc6d861f-c41b-41b6-a343-caac595c623a",
+              "name": "연체일수",
+              "value": "={{ $json['연체일수'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        -32
+      ],
+      "id": "880d7bbf-fbca-40a8-966e-30f32e95dd0a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6de25bef-95fe-4d77-8e48-cb8fd96537ce",
+              "leftValue": "={{ $json['연체일수'] }}",
+              "rightValue": 90,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            },
+            {
+              "id": "20c16265-acb2-4f13-929f-fdf1926a9a5b",
+              "leftValue": "={{ $json['연체일수'] }}",
+              "rightValue": 31,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        128
+      ],
+      "id": "35a106a2-e969-4319-98e5-706c6ba42855",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "20c16265-acb2-4f13-929f-fdf1926a9a5b",
+              "leftValue": "={{ $json['연체일수'] }}",
+              "rightValue": 91,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        288
+      ],
+      "id": "e3f1a748-f743-4c11-969f-c7befc52c5d3",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4dbb9da1-13b6-4771-a1a8-8ab70f6468af",
+              "name": "등급",
+              "value": "2등급 (주의)",
+              "type": "string"
+            },
+            {
+              "id": "a45d5e35-e0cf-4968-847f-8609b7692af3",
+              "name": "고객명",
+              "value": "={{ $json['고객명'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4464a45b-edd3-423c-9ad5-67603038712f",
+              "name": "이메일",
+              "value": "={{ $json['이메일'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ad4d7699-c6aa-44c3-a92c-3489f26e6b8d",
+              "name": "연체금액",
+              "value": "={{ $json['연체금액(만원)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "cc6d861f-c41b-41b6-a343-caac595c623a",
+              "name": "연체일수",
+              "value": "={{ $json['연체일수'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        128
+      ],
+      "id": "ce391dba-fc5a-4e7e-bad1-745c30218deb",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4dbb9da1-13b6-4771-a1a8-8ab70f6468af",
+              "name": "등급",
+              "value": "3등급 (위험)",
+              "type": "string"
+            },
+            {
+              "id": "a45d5e35-e0cf-4968-847f-8609b7692af3",
+              "name": "고객명",
+              "value": "={{ $json['고객명'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4464a45b-edd3-423c-9ad5-67603038712f",
+              "name": "이메일",
+              "value": "={{ $json['이메일'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ad4d7699-c6aa-44c3-a92c-3489f26e6b8d",
+              "name": "연체금액",
+              "value": "={{ $json['연체금액(만원)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "cc6d861f-c41b-41b6-a343-caac595c623a",
+              "name": "연체일수",
+              "value": "={{ $json['연체일수'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        288
+      ],
+      "id": "af49215c-2dec-4557-8963-b8e818a11367",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['이메일'] }}",
+        "subject": "=[ER은행·최종경고] 법적 조치 예고 ({{ $json.고객명 }}님)",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px\">   <div style=\"background:#fee2e2;border-left:4px solid #ef4444;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px\">     <strong>상환 기일이 지났습니다</strong>   </div>   <p>안녕하세요, <strong>{{ $json.고객명 }}</strong>님.</p>   <p>현재 <strong>{{ $json.연체금액 }}만원</strong>이 <strong>{{ $json.연체일수 }}일</strong> 연체 중입니다.</p>   <p>연체 {{ $json.연체일수 }}일 경과로 채권 추심 절차가\n   개시될 예정입니다. 7일 이내 상환하지 않으실 경우\n   법적 조치가 진행됩니다. 문의사항은 담당자에게 연락해 주세요.</p>   <p style=\"color:#888;font-size:12px;margin-top:24px\">ER은행 여신관리팀 · 자동발송</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        288
+      ],
+      "id": "e134d6a7-41b8-41cb-9467-8e877245b926",
+      "name": "Send a message2",
+      "webhookId": "143c48a5-00cc-411d-9c75-1a7ebf2ca6e9",
+      "executeOnce": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['이메일'] }}",
+        "subject": "=[ER은행·긴급] 연체 공식 통지 ({{ $json.고객명 }}님)",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px\">   <div style=\"background:#ffedd5;border-left:4px solid #f97316;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px\">     <strong>상환 기일이 지났습니다</strong>   </div>   <p>안녕하세요, <strong>{{ $json.고객명 }}</strong>님.</p>   <p>현재 <strong>{{ $json.연체금액 }}만원</strong>이 <strong>{{ $json.연체일수 }}일</strong> 연체 중입니다.</p>   <p>현재 연체 상태가 지속될 경우 신용등급 하락 및\n   추가 금융거래 제한이 발생할 수 있습니다. 문의사항은 담당자에게 연락해 주세요.</p>   <p style=\"color:#888;font-size:12px;margin-top:24px\">ER은행 여신관리팀 · 자동발송</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        128
+      ],
+      "id": "0f5aebe3-5935-446d-9992-050cb28b2809",
+      "name": "Send a message 1",
+      "webhookId": "143c48a5-00cc-411d-9c75-1a7ebf2ca6e9",
+      "executeOnce": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['이메일'] }}",
+        "subject": "=[ER은행] 대출 상환 안내 ({{ $json.고객명 }}님)",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px\">   <div style=\"background:#fef3c7;border-left:4px solid #f59e0b;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px\">     <strong>상환 기일이 지났습니다</strong>   </div>   <p>안녕하세요, <strong>{{ $json.고객명 }}</strong>님.</p>   <p>현재 <strong>{{ $json.연체금액 }}만원</strong>이 <strong>{{ $json.연체일수 }}일</strong> 연체 중입니다.</p>   <p>빠른 시일 내 상환 부탁드립니다. 문의사항은 담당자에게 연락해 주세요.</p>   <p style=\"color:#888;font-size:12px;margin-top:24px\">ER은행 여신관리팀 · 자동발송</p> </div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        -32
+      ],
+      "id": "bf8f59df-df75-4af3-8be2-869f334f63d6",
+      "name": "Send a message",
+      "webhookId": "143c48a5-00cc-411d-9c75-1a7ebf2ca6e9",
+      "executeOnce": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a message 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "698f6399-6cc3-4ecc-a028-6ab84784d8dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4c37afc9752fe67a196d8ee9ceed60ac48080b0f49495b537873718f58ac1ca4"
+  },
+  "id": "eu8XsyOHfkEH3y4W",
+  "tags": []
+}

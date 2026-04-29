@@ -1,0 +1,597 @@
+{
+  "name": "W5 실습",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE_WITH_YOUR_SLACK_WEBHOOK_URL",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=👤 *팀장 승인 요청*\n━━━━━━━━━━━\n🏢 {{ $json.신청인 }} ({{ $json.업종 }})\n💰 {{ Number($json.신청금액).toLocaleString() }}만원\n📊 신용등급: {{ $json.신용등급 }} · AI위험도: {{ $json.AI위험도 }}\n🤖 {{ $json.분석요약 }}\n⚠️ {{ $json.주의사항 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        752,
+        32
+      ],
+      "id": "42975161-a883-4b5a-9640-52b5f16eab3d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/REPLACE_WITH_YOUR_SLACK_WEBHOOK_URL",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=👤 *본부 위임 요청*\n━━━━━━━━━━━\n🏢 {{ $json.신청인 }} ({{ $json.업종 }})\n💰 {{ Number($json.신청금액).toLocaleString() }}만원\n📊 신용등급: {{ $json.신용등급 }} · AI위험도: {{ $json.AI위험도 }}\n🤖 {{ $json.분석요약 }}\n⚠️ {{ $json.주의사항 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        752,
+        320
+      ],
+      "id": "18da8ae2-e23c-4911-aa46-65bbf5acb739",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "13YjFO_mdwoh9_SOtO90S5UMDU3mWkj5L8QZXiErlxlg",
+          "mode": "list",
+          "cachedResultName": "W5 실습 시트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13YjFO_mdwoh9_SOtO90S5UMDU3mWkj5L8QZXiErlxlg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "여신신청_심사",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13YjFO_mdwoh9_SOtO90S5UMDU3mWkj5L8QZXiErlxlg/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "c3964089-9c1f-40df-9763-3d96dad5512f",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "1N0RwklN3InrKwNr",
+          "name": "GoogleSheet - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=기업명: {{ $json.신청인 }}\n업종: {{ $json.업종 }}\n신용등급: {{ $json.신용등급 }}\n부채비율: {{ $json['부채비율(%)'] }}%\n영업이익률: {{ $json['영업이익률(%)'] }}%\n신청금액: {{ $json['신청금액(만원)'] }}만원",
+        "options": {
+          "systemMessage": "당신은 ER은행 여신 심사 전문가입니다.\n\n기업의 업종, 신용등급, 재무 수치(부채비율, 영업이익률)를 종합 분석하여 여신 위험도를 평가하세요.\n\n【위험도 판정 기준】\n- \"낮음\": 신용등급 A 이상 AND 부채비율 150% 이하 AND 영업이익률 5% 이상\n- \"보통\": 위의 조건 중 1~2개 미달 OR 신용등급 BBB\n- \"높음\": 신용등급 BB 이하 OR 부채비율 300% 초과 OR 영업이익률 마이너스\n\n【응답 형식 — 반드시 JSON으로만 응답】\n{\n  \"위험도\": \"낮음\",\n  \"분석요약\": \"건설업 AA등급, 부채비율 120%로 업종 평균 이하, 영업이익률 8.5%로 안정적. 우량 차주로 판단.\",\n  \"주의사항\": \"건설업 경기 변동에 따른 모니터링 필요\"\n}\n\nJSON 외에 다른 텍스트를 절대 추가하지 마세요."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "ab6c6ec1-383c-4454-bb25-5a40849cf51f",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        208
+      ],
+      "id": "e3018b94-c342-42f4-8689-c1d5e540eae3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6726tmMPJ5ZxwQlp",
+          "name": "Eruty"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "562c19e5-ce82-42c3-ae56-1156963dc46b",
+              "name": "AI위험도",
+              "value": "={{ JSON.parse($json.output).위험도 }}",
+              "type": "string"
+            },
+            {
+              "id": "7243d15d-2fdb-4697-be62-ff489cb94056",
+              "name": "분석요약",
+              "value": "={{ JSON.parse($json.output).분석요약 }}",
+              "type": "string"
+            },
+            {
+              "id": "9afdeec5-864d-42da-b4ee-c3906e5520fa",
+              "name": "주의사항",
+              "value": "={{ JSON.parse($json.output).주의사항 }}",
+              "type": "string"
+            },
+            {
+              "id": "5c83bfd5-a249-49f4-affa-1569912474e0",
+              "name": "신청인",
+              "value": "={{ $('Google Sheets Trigger').item.json.신청인 }}",
+              "type": "string"
+            },
+            {
+              "id": "c8eb5f3e-5d56-4bf9-ae4f-8a1d916cbe7c",
+              "name": "이메일",
+              "value": "={{ $('Google Sheets Trigger').item.json.이메일 }}",
+              "type": "string"
+            },
+            {
+              "id": "789f8709-7c19-403c-bf0d-0150a1140165",
+              "name": "신청금액",
+              "value": "={{ $('Google Sheets Trigger').item.json['신청금액(만원)'] }}",
+              "type": "string"
+            },
+            {
+              "id": "2b41d160-f42a-42bf-8e7d-acfef9b06cfa",
+              "name": "업종",
+              "value": "={{ $('Google Sheets Trigger').item.json.업종 }}",
+              "type": "string"
+            },
+            {
+              "id": "85f4d249-3d53-46d3-a045-d7bc78f84a40",
+              "name": "신용등급",
+              "value": "={{ $('Google Sheets Trigger').item.json.신용등급 }}",
+              "type": "string"
+            },
+            {
+              "id": "f43255f0-d48c-4e51-bc00-4e880ba9f6af",
+              "name": "=승인경로",
+              "value": "={{\n  (Number($('Google Sheets Trigger').item.json['신청금액(만원)']) >= 100000 || JSON.parse($json.output).위험도 === '높음')\n    ? '본부위임'\n    : (Number($('Google Sheets Trigger').item.json['신청금액(만원)']) >= 10000 || JSON.parse($json.output).위험도 === '보통')\n      ? '팀장승인'\n      : '자동승인'\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        0
+      ],
+      "id": "e3995108-38bd-4b7b-bf7f-69bb97587b47",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['승인경로'] }}",
+                    "rightValue": "자동승인",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c374619a-a3f9-4798-a5e3-553a61e87559"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "자동승인"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5c5d16fb-8bab-467b-9099-709a8eef5029",
+                    "leftValue": "={{ $json['승인경로'] }}",
+                    "rightValue": "팀장승인",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "팀장승인"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5bca82be-f01c-451e-9eb9-d9b8ec745b94",
+                    "leftValue": "={{ $json['승인경로'] }}",
+                    "rightValue": "본부위임",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "본부위임"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -16
+      ],
+      "id": "d38f9970-49e8-4667-a69a-275e33390e85",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['이메일'] }}",
+        "subject": "=[JB은행] 여신 승인 완료 — {{ $json.신청인 }}",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#d1fae5;border-left:4px solid #10b981;padding:14px;border-radius:0 8px 8px 0\">     <strong>✅ 여신 승인이 완료되었습니다</strong>   </div>   <p><strong>{{ $json.신청인 }}</strong>님의 {{ $json.업종 }} 여신 신청이 승인되었습니다.</p>   <table style=\"width:100%;border-collapse:collapse;margin:16px 0\">     <tr style=\"background:#f0fdf4\">       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">승인 금액</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ Number($json.신청금액).toLocaleString() }}만원</td>     </tr>     <tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">승인 유형</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">자동승인 (소액·우량)</td>     </tr>   </table>   <p>🤖 <strong>AI 심사 의견:</strong> {{ $json.분석요약 }}</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        -288
+      ],
+      "id": "b062edd1-ed06-4889-b729-4a0cda517ea0",
+      "name": "Send a message",
+      "webhookId": "57fed035-b7fb-4e32-b611-dbbce9caa7f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=teamlead@jbbank.com",
+        "subject": "=[승인요청] {{ $json.신청인 }} — {{ Number($json.신청금액).toLocaleString() }}만원",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#ffedd5 ;border-left:4px solid #f97316 ;padding:14px;border-radius:0 8px 8px 0\"> <strong>❗️팀장 승인이 필요합니다.</strong>      </div>   <p><strong>{{ $json.신청인 }}</strong>님의 {{ $json.업종 }} 여신 신청이 접수되었습니다.</p>   <table style=\"width:100%;border-collapse:collapse;margin:16px 0\">     <tr style=\"background:#ffedd5 \">       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">신청 금액</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ Number($json.신청금액).toLocaleString() }}만원</td>     </tr>     <tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">승인 유형</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">팀장승인</td>     </tr> <tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">AI 위험도</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ $json['AI위험도'] }}</td>     </tr><tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">주의사항</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ $json['주의사항'] }}</td>     </tr>  </table>   <p>🤖 <strong>AI 심사 의견:</strong> {{ $json.분석요약 }}</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        -112
+      ],
+      "id": "d950109a-bcd2-4c01-be7b-51e83a22fb7d",
+      "name": "Send a message1",
+      "webhookId": "57fed035-b7fb-4e32-b611-dbbce9caa7f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=committee@jbbank.com",
+        "subject": "=🚨[본부심사 위임] {{ $json.신청인 }} — {{ Number($json.신청금액).toLocaleString() }}만원",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#fee2e2 ;border-left:4px solid #ef4444 ;padding:14px;border-radius:0 8px 8px 0\"> <strong>‼️ 본부 위임건 입니다.</strong>      </div>   <p><strong>{{ $json.신청인 }}</strong>님의 {{ $json.업종 }} 여신 신청이 접수되었습니다.</p>   <table style=\"width:100%;border-collapse:collapse;margin:16px 0\">     <tr style=\"background:#fee2e2 \">       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">신청 금액</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ Number($json.신청금액).toLocaleString() }}만원</td>     </tr>     <tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">승인 유형</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">팀장승인</td>     </tr> <tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">AI 위험도</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ $json['AI위험도'] }}</td>     </tr><tr>       <td style=\"padding:8px 12px;border:1px solid #ddd;font-weight:bold\">주의사항</td>       <td style=\"padding:8px 12px;border:1px solid #ddd\">{{ $json['주의사항'] }}</td>     </tr>  </table>   <p>🤖 <strong>AI 심사 의견:</strong> {{ $json.분석요약 }}</p> </div>",
+        "options": {
+          "ccList": "executive@jbbank.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        176
+      ],
+      "id": "629725bb-83c7-4df8-88b8-2872c8185888",
+      "name": "Send a message2",
+      "webhookId": "57fed035-b7fb-4e32-b611-dbbce9caa7f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "13YjFO_mdwoh9_SOtO90S5UMDU3mWkj5L8QZXiErlxlg",
+          "mode": "list",
+          "cachedResultName": "W5 실습 시트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13YjFO_mdwoh9_SOtO90S5UMDU3mWkj5L8QZXiErlxlg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1371538410,
+          "mode": "list",
+          "cachedResultName": "여신신청_이력",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13YjFO_mdwoh9_SOtO90S5UMDU3mWkj5L8QZXiErlxlg/edit#gid=1371538410"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "접수일시": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "신청인": "={{ $json.신청인 }}",
+            "업종": "={{ $json.업종 }}",
+            "신청금액": "={{ $json.신청금액 }}",
+            "신용등급": "={{ $json['신용등급'] }}",
+            "AI위험도": "={{ $json['AI위험도'] }}",
+            "승인경로": "={{ $json['승인경로'] }}",
+            "분석요약": "={{ $json['분석요약'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "접수일시",
+              "displayName": "접수일시",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "신청인",
+              "displayName": "신청인",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "업종",
+              "displayName": "업종",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "신청금액",
+              "displayName": "신청금액",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "신용등급",
+              "displayName": "신용등급",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI위험도",
+              "displayName": "AI위험도",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "승인경로",
+              "displayName": "승인경로",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "분석요약",
+              "displayName": "분석요약",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        192
+      ],
+      "id": "6218f73e-0b5a-4f1a-92ec-e1aa697daaa3",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gAcqZTZO8P61cM1G",
+          "name": "eruty"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f602e3e8-4313-47ef-ab2e-7fc82695586b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4c37afc9752fe67a196d8ee9ceed60ac48080b0f49495b537873718f58ac1ca4"
+  },
+  "id": "PnibNIwzTySzdcvZ",
+  "tags": []
+}

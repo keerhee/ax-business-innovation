@@ -1,0 +1,504 @@
+{
+  "name": "W3 실습",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json[\"폴더명\"] }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1TOW-2JwXp-xFEMbENvSvVukZWOuNH2ye",
+          "mode": "list",
+          "cachedResultName": "여신심사",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1TOW-2JwXp-xFEMbENvSvVukZWOuNH2ye"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        272,
+        -64
+      ],
+      "id": "af9dd1a3-8f4c-44e0-896a-53075f604dba",
+      "name": "Create folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vSWnLCtbIOkyVHON",
+          "name": "n8n-hyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "={{ $json.id }}",
+        "title": "=서류체크리스트_{{ $('Set').item.json['고객명'] }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -64
+      ],
+      "id": "2768dc74-86ce-4fb6-804a-8cc97c691629",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "fK9joH8Ov0dxuoVP",
+          "name": "jinhyeok_eruty.co.kr"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "90119183-8bca-4d8b-b03d-8bd3337b16ec",
+              "name": "접수번호",
+              "value": "= ER-{{ String($json.row_number-1).padStart(3,'0') }}",
+              "type": "string"
+            },
+            {
+              "id": "aa0b5487-33c4-4f7e-86c1-2529c9dab0e2",
+              "name": "고객명",
+              "value": "={{ $json[\"신청인 성명\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f7607fe6-c0a2-44ba-87f3-39bf84f76978",
+              "name": "이메일",
+              "value": "={{ $json[\"신청인 이메일\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f1498a07-cb29-4104-8ca7-f2738db87abb",
+              "name": "대출종류",
+              "value": "={{ $json[\"대출 종류\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "4b4acfe2-083a-4a7d-805c-b7959f1836c8",
+              "name": "신청금액",
+              "value": "={{ $json[\"신청 금액(만원)\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "bf7a4d9e-2f8c-4780-9482-cf694a80d388",
+              "name": "심사역",
+              "value": "={{ $json[\"담당 심사역\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "d51c660c-a092-4680-b08b-bec34611972f",
+              "name": "심사역이메일",
+              "value": "={{ $json[\"심사역 이메일\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6f7fe947-aca4-4674-b0cb-ba77d831306f",
+              "name": "폴더명",
+              "value": "={{ $json['신청인 성명'] }}_{{ $now.format('yyyyMMdd') }}",
+              "type": "string"
+            },
+            {
+              "id": "17e4bf49-e908-4e6b-ab9e-a7a73b29b08b",
+              "name": "검토일",
+              "value": "={{ $now.plus(3, 'days').format('yyyy-MM-dd') }} ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "531ac737-01a8-4860-be79-dd193967dbfd",
+      "name": "Set"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=접수번호: {{ $('Set').item.json.접수번호 }} \n고객명: {{ $('Set').item.json.고객명 }} \n대출종류: {{ $('Set').item.json.대출종류 }} \n신청금액: {{ $('Set').item.json.신청금액 }}만원 \n담당심사역: {{ $('Set').item.json.심사역 }} \n접수일: {{ $now.format('yyyy-MM-dd') }} \n\n━━━━━━━━━━━━━━━━━ \n☐ 사업자등록증 사본 \n☐ 최근 3개년 재무제표 \n☐ 부가세 과세표준증명원 \n☐ 국세·지방세 납세증명서 \n☐ 등기사항전부증명서 \n☐ 담보물 감정평가서 (해당 시) \n☐ 대표자 신분증 사본 \n☐ 기타: _______________ \n━━━━━━━━━━━━━━━━━ \n\n검토 예정일: {{ $('Set').item.json.검토일 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "ee2922d0-f29b-402f-82c4-88e7019d3f82",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "fK9joH8Ov0dxuoVP",
+          "name": "jinhyeok_eruty.co.kr"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "jinhyeok@eruty.co.kr",
+          "mode": "list",
+          "cachedResultName": "jinhyeok@eruty.co.kr"
+        },
+        "start": "={{($json['검토일']).toDateTime().set({ hour: 9 }) }}",
+        "end": "={{($json['검토일']).toDateTime().set({ hour: 10 }) }}",
+        "additionalFields": {
+          "attendees": [
+            "=jinhyeok@eruty.co.kr"
+          ],
+          "description": "=접수번호: {{ $json.접수번호 }}\n신청금액: {{ $json.신청금액 }}만원\n서류 폴더 확인 후 심사 의견서 작성",
+          "summary": "=[여신심사] {{ $json.고객명 }} - {{ $json.대출종류 }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        96
+      ],
+      "id": "6dd2667d-1395-4fe0-8f37-07f194d8c8f0",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "6SrY8u25zjW7lwdZ",
+          "name": "Google Calendar - hyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        -64
+      ],
+      "id": "ec64b15e-6044-4c5f-8b63-6a9e4bce22e1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dapoPactdpCmet2i_Y1lNX3rx6EEwLa_pXmRds5q-2Q",
+          "mode": "list",
+          "cachedResultName": "대출 신청 접수(응답)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dapoPactdpCmet2i_Y1lNX3rx6EEwLa_pXmRds5q-2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1942141945,
+          "mode": "list",
+          "cachedResultName": "설문지 응답 시트1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dapoPactdpCmet2i_Y1lNX3rx6EEwLa_pXmRds5q-2Q/edit#gid=1942141945"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "상태"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        -64
+      ],
+      "id": "1137bcaa-72a1-41bb-a06a-d34e3da9369d",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gAcqZTZO8P61cM1G",
+          "name": "eruty"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1dapoPactdpCmet2i_Y1lNX3rx6EEwLa_pXmRds5q-2Q",
+          "mode": "list",
+          "cachedResultName": "대출 신청 접수(응답)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dapoPactdpCmet2i_Y1lNX3rx6EEwLa_pXmRds5q-2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1942141945,
+          "mode": "list",
+          "cachedResultName": "설문지 응답 시트1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dapoPactdpCmet2i_Y1lNX3rx6EEwLa_pXmRds5q-2Q/edit#gid=1942141945"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "상태": "완료"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "타임스탬프",
+              "displayName": "타임스탬프",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "신청인 성명",
+              "displayName": "신청인 성명",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "신청인 이메일",
+              "displayName": "신청인 이메일",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "대출 종류",
+              "displayName": "대출 종류",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "신청 금액(만원)",
+              "displayName": "신청 금액(만원)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "담당 심사역",
+              "displayName": "담당 심사역",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "심사역 이메일",
+              "displayName": "심사역 이메일",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "상태",
+              "displayName": "상태",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        416
+      ],
+      "id": "59a02eab-a8e7-4166-9b4f-ffdc6e9edf02",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gAcqZTZO8P61cM1G",
+          "name": "eruty"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['심사역이메일'] }}",
+        "subject": "=[여신 신규 접수] ER은행 {{ $json.접수번호 }}",
+        "message": "=<div style=\"font-family:sans-serif; max-width:560px; margin:0 auto; padding:24px; color:#1a1a2e\">   <h2 style=\"margin:0 0 16px; color:#1a1a2e\">🆕 여신 신규 접수</h2>   <div style=\"border-top:2px solid #1a1a2e; border-bottom:2px solid #1a1a2e; padding:16px 0; line-height:1.8; font-size:15px\">     <p style=\"margin:0\">📌 <strong>접수번호:</strong> {{ $json.접수번호 }}</p>     <p style=\"margin:0\">👤 <strong>고객:</strong> {{ $json.고객명 }}</p>     <p style=\"margin:0\">💰 <strong>금액:</strong> {{ $json.신청금액 }}만원 ({{ $json.대출종류 }})</p>     <p style=\"margin:0\">👨‍💼 <strong>심사역:</strong> {{ $json.심사역 }}</p>     <p style=\"margin:0\">📅 <strong>검토일:</strong> {{ $json.검토일 }}</p>   </div> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        256
+      ],
+      "id": "34371fe0-d5da-4f4c-99a6-b8d1ccbd9680",
+      "name": "Send a message",
+      "webhookId": "c970490d-3d5c-4626-abd7-85aa385d9119",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create folder": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ad527e62-d88a-4552-9392-3d505b27393a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4c37afc9752fe67a196d8ee9ceed60ac48080b0f49495b537873718f58ac1ca4"
+  },
+  "id": "QWSzw0LvoMyvukS8",
+  "tags": []
+}

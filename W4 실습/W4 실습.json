@@ -1,0 +1,612 @@
+{
+  "name": "W4 실습",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        -64
+      ],
+      "id": "896bdc10-8a83-47df-a0c0-cdcce8c27a7b",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=이메일 제목: {{ $json.subject }}\n이메일 본문: {{ $json.text }}",
+        "options": {
+          "systemMessage": "당신은 ER은행 고객 민원 이메일 분류 전문가입니다.\n\n고객이 보낸 이메일의 제목과 본문을 읽고, 아래 5가지 유형 중 하나로 분류하세요.\n\n【분류 유형】\n1. 대출문의 — 대출 신청, 금리, 한도, 상환 관련\n2. 카드분실 — 카드 분실, 도난, 정지 요청\n3. 이자항의 — 예금/적금 이자, 금리 불만\n4. 부정거래신고 — 본인 모르는 거래, 사기 의심, 해킹\n5. 일반문의 — 영업시간, 서류, 계좌개설 등 기타\n\n【담당팀 유형】\n1. 대출문의 : 여신영업팀, 여신상담팀, 대출상담센터\n2. 카드분실 : 카드고객센터, 카드분실신고센터, 카드운영팀\n3. 이자항의 : 수신팀, 예금상품팀, 고객민원팀\n4. 부정거래신고 : 금융사기대응팀, 이상거래탐지팀, 전자금융보안팀, 사고신고센터\n5. 일반문의 : 고객센터, 영업지원팀, 지점창구, 고객상담팀\n\n【긴급도 판정】\n- 긴급: 카드분실, 부정거래신고\n- 보통: 이자항의, 대출문의\n- 낮음: 일반문의\n\n【응답 형식 — 반드시 아래 JSON 형식으로만 응답】\n{\n  \"분류\": \"대출문의\",\n  \"긴급도\": \"보통\",\n  \"요약\": \"중소 제조업체 운전자금 대출 한도·금리 문의\",\n  \"담당팀\": \"여신영업팀\"\n}\n\nJSON 외에 다른 텍스트를 절대 추가하지 마세요."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        112,
+        -64
+      ],
+      "id": "0fa2ea13-0172-49dc-9475-770a25f62be3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        128
+      ],
+      "id": "11fe4d98-8ec8-4083-8a49-24b9a3a983f3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6726tmMPJ5ZxwQlp",
+          "name": "Eruty"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "27fdc4e1-28f8-4c4d-b0a1-e97c001248f8",
+              "name": "=AI분류",
+              "value": "={{ JSON.parse($json.output).분류 }}",
+              "type": "string"
+            },
+            {
+              "id": "49c02ed8-9293-4e7e-8fce-3db32c66c914",
+              "name": "긴급도",
+              "value": "={{ JSON.parse($json.output).긴급도 }}",
+              "type": "string"
+            },
+            {
+              "id": "803affef-b23d-4dbb-bf14-9cbb622538f6",
+              "name": "AI요약",
+              "value": "={{ JSON.parse($json.output).요약 }}",
+              "type": "string"
+            },
+            {
+              "id": "f0c9c7e4-33e9-44bc-a0bc-3a2789dcd179",
+              "name": "담당팀",
+              "value": "={{ JSON.parse($json.output).담당팀 }}",
+              "type": "string"
+            },
+            {
+              "id": "2a4b085e-0c08-43a5-94dc-f74601034bcd",
+              "name": "원본제목",
+              "value": "={{ $('Gmail Trigger').item.json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "91e44116-ddca-4a6d-bc93-4b6d350aa7d2",
+              "name": "보낸사람",
+              "value": "={{ $('Gmail Trigger').item.json.from.value[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "c5f290bf-7b89-469a-a0a3-572ada2bd539",
+              "name": "접수일시",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -64
+      ],
+      "id": "4de5ec53-445d-4406-a846-cd9b98ca10de",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"AI분류\"] }}",
+                    "rightValue": "대출문의",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "254e7769-753c-4b03-8915-f0afb6db2e25"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "대출문의"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e9060cc6-5089-4035-9c8e-5e3b618f57f4",
+                    "leftValue": "={{ $json[\"AI분류\"] }}",
+                    "rightValue": "카드분실",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "카드분실"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "98a5e299-08d7-46d2-80b0-839e8307dccc",
+                    "leftValue": "={{ $json[\"AI분류\"] }}",
+                    "rightValue": "이자항의",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "이자항의"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f08524eb-7814-4267-bbaa-645143756126",
+                    "leftValue": "={{ $json[\"AI분류\"] }}",
+                    "rightValue": "부정거래신고",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "부정거래신고"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d46818fd-0fc3-4975-a8a6-e9f64a07016a",
+                    "leftValue": "={{ $json[\"AI분류\"] }}",
+                    "rightValue": "일반문의",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "일반문의"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 4
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        -112
+      ],
+      "id": "de743275-39a8-4a09-b17b-2b7b42f599c0",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "loan@jbbank.com",
+        "subject": "=[대출문의]{{ $('Edit Fields').item.json['원본제목'] }}",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#f3f0ff;border-left:4px solid #7c3aed;padding:14px;border-radius:0 8px 8px 0;margin-bottom:16px\">     <strong>🤖 AI 자동 분류 결과</strong><br>     분류: <strong>{{ $json.AI분류 }}</strong> · 긴급도: {{ $json.긴급도 }}<br>     요약: {{ $json.AI요약 }}   </div>   <hr style=\"border:1px solid #eee\">   <p><strong>원본 이메일 정보</strong></p>   <p>보낸 사람: {{ $json.보낸사람 }}</p>   <p>제목: {{ $json.원본제목 }}</p>   <p style=\"color:#888;font-size:12px;margin-top:20px\">이 메일은 n8n + chatGPT AI에 의해 자동 분류·전달되었습니다.</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -352
+      ],
+      "id": "a7770a7a-a6d4-4ba6-aac4-165a77a37137",
+      "name": "Send a message",
+      "webhookId": "f3e2b9b5-8975-42d5-ad1c-e3c72c6f2b2d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "card@jbbank.com",
+        "subject": "=🚨[긴급·카드분실]{{ $('Edit Fields').item.json['원본제목'] }}",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#f3f0ff;border-left:4px solid #7c3aed;padding:14px;border-radius:0 8px 8px 0;margin-bottom:16px\">     <strong>🤖 AI 자동 분류 결과</strong><br>     분류: <strong>{{ $json.AI분류 }}</strong> · 긴급도: {{ $json.긴급도 }}<br>     요약: {{ $json.AI요약 }}   </div>   <hr style=\"border:1px solid #eee\">   <p><strong>원본 이메일 정보</strong></p>   <p>보낸 사람: {{ $json.보낸사람 }}</p>   <p>제목: {{ $json.원본제목 }}</p>   <p style=\"color:#888;font-size:12px;margin-top:20px\">이 메일은 n8n + chatGPT AI에 의해 자동 분류·전달되었습니다.</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -224
+      ],
+      "id": "e258182c-e4e6-4457-a2a2-16f896a572ea",
+      "name": "Send a message1",
+      "webhookId": "f3e2b9b5-8975-42d5-ad1c-e3c72c6f2b2d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "deposit@jbbank.com",
+        "subject": "=[이자항의]{{ $('Edit Fields').item.json['원본제목'] }}",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#f3f0ff;border-left:4px solid #7c3aed;padding:14px;border-radius:0 8px 8px 0;margin-bottom:16px\">     <strong>🤖 AI 자동 분류 결과</strong><br>     분류: <strong>{{ $json.AI분류 }}</strong> · 긴급도: {{ $json.긴급도 }}<br>     요약: {{ $json.AI요약 }}   </div>   <hr style=\"border:1px solid #eee\">   <p><strong>원본 이메일 정보</strong></p>   <p>보낸 사람: {{ $json.보낸사람 }}</p>   <p>제목: {{ $json.원본제목 }}</p>   <p style=\"color:#888;font-size:12px;margin-top:20px\">이 메일은 n8n + chatGPT AI에 의해 자동 분류·전달되었습니다.</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -64
+      ],
+      "id": "40fe7a70-26b1-4e8d-895d-1b9896e035a8",
+      "name": "Send a message2",
+      "webhookId": "f3e2b9b5-8975-42d5-ad1c-e3c72c6f2b2d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "security@jbbank.com",
+        "subject": "=🚨🚨[최긴급·부정거래]{{ $('Edit Fields').item.json['원본제목'] }}",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#f3f0ff;border-left:4px solid #7c3aed;padding:14px;border-radius:0 8px 8px 0;margin-bottom:16px\">     <strong>🤖 AI 자동 분류 결과</strong><br>     분류: <strong>{{ $json.AI분류 }}</strong> · 긴급도: {{ $json.긴급도 }}<br>     요약: {{ $json.AI요약 }}   </div>   <hr style=\"border:1px solid #eee\">   <p><strong>원본 이메일 정보</strong></p>   <p>보낸 사람: {{ $json.보낸사람 }}</p>   <p>제목: {{ $json.원본제목 }}</p>   <p style=\"color:#888;font-size:12px;margin-top:20px\">이 메일은 n8n + chatGPT AI에 의해 자동 분류·전달되었습니다.</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        96
+      ],
+      "id": "75f99902-d23d-4680-8b72-e79e58cc9ae6",
+      "name": "Send a message3",
+      "webhookId": "f3e2b9b5-8975-42d5-ad1c-e3c72c6f2b2d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "cs@jbbank.com",
+        "subject": "=[일반문의]{{ $('Edit Fields').item.json['원본제목'] }}",
+        "message": "=<div style=\"font-family:sans-serif;max-width:560px;padding:24px\">   <div style=\"background:#f3f0ff;border-left:4px solid #7c3aed;padding:14px;border-radius:0 8px 8px 0;margin-bottom:16px\">     <strong>🤖 AI 자동 분류 결과</strong><br>     분류: <strong>{{ $json.AI분류 }}</strong> · 긴급도: {{ $json.긴급도 }}<br>     요약: {{ $json.AI요약 }}   </div>   <hr style=\"border:1px solid #eee\">   <p><strong>원본 이메일 정보</strong></p>   <p>보낸 사람: {{ $json.보낸사람 }}</p>   <p>제목: {{ $json.원본제목 }}</p>   <p style=\"color:#888;font-size:12px;margin-top:20px\">이 메일은 n8n + chatGPT AI에 의해 자동 분류·전달되었습니다.</p> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        240
+      ],
+      "id": "42ed4d71-c869-4445-885f-001b98b323a8",
+      "name": "Send a message4",
+      "webhookId": "f3e2b9b5-8975-42d5-ad1c-e3c72c6f2b2d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yYkGtwUvMaLYvRtS",
+          "name": "Gmail - jinhyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LhZI9kp2SiL8eh38dKJk6VL2b7LPn6StMp5q2jirGjU",
+          "mode": "list",
+          "cachedResultName": "W4 실습 시트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LhZI9kp2SiL8eh38dKJk6VL2b7LPn6StMp5q2jirGjU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "민원분류이력",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LhZI9kp2SiL8eh38dKJk6VL2b7LPn6StMp5q2jirGjU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "접수일시": "={{ $json['접수일시'] }}",
+            "보낸사람": "={{ $json['보낸사람'] }}",
+            "제목": "={{ $json['원본제목'] }}",
+            "AI분류": "={{ $json['AI분류'] }}",
+            "긴급도": "={{ $json['긴급도'] }}",
+            "AI요약": "={{ $json['AI요약'] }}",
+            "담당팀": "={{ $json['담당팀'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "접수일시",
+              "displayName": "접수일시",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "보낸사람",
+              "displayName": "보낸사람",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "제목",
+              "displayName": "제목",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI분류",
+              "displayName": "AI분류",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "긴급도",
+              "displayName": "긴급도",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI요약",
+              "displayName": "AI요약",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "담당팀",
+              "displayName": "담당팀",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        176
+      ],
+      "id": "fba10d3b-3bc7-4498-bed1-5c2eb9b826d1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gAcqZTZO8P61cM1G",
+          "name": "eruty"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "60fd7830-4a97-4b73-b99f-1256c39982dd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4c37afc9752fe67a196d8ee9ceed60ac48080b0f49495b537873718f58ac1ca4"
+  },
+  "id": "Z4ETeKplHf3a6jNS",
+  "tags": []
+}

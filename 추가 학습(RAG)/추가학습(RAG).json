@@ -1,0 +1,344 @@
+{
+  "name": "추가학습(RAG)",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1648,
+        -96
+      ],
+      "id": "13876d93-f9f6-4e90-a29c-9508c1460ff3",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.2,
+      "position": [
+        -1296,
+        304
+      ],
+      "id": "54b95d51-9aa1-460e-a2f5-b10aedb88ea5",
+      "name": "Chat",
+      "webhookId": "9e558cc6-f3d0-4a39-847a-13bdda8b28f5"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "operation": "queryPoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "Company-Report",
+          "mode": "list",
+          "cachedResultName": "Company-Report"
+        },
+        "query": "{\n  \"fusion\": \"rrf\"\n}",
+        "limit": 5,
+        "prefetch": "=[\n  {\n    \"query\": {\n      \"text\": \"{{ $json.chatInput }}\",\n      \"model\": \"sentence-transformers/all-minilm-l6-v2\"\n    },\n    \"using\": \"dense\",\n    \"limit\": 10\n  },\n  {\n    \"query\": {\n      \"text\": \"{{ $json.chatInput }}\",\n      \"model\": \"qdrant/bm25\"\n    },\n    \"using\": \"sparse\",\n    \"limit\": 10\n  }\n]\n\n",
+        "requestOptions": {}
+      },
+      "id": "5abdd18d-d630-49b0-92de-98d279bd24fa",
+      "name": "Query Points",
+      "type": "n8n-nodes-qdrant.qdrant",
+      "position": [
+        -1856,
+        304
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "uAOs1DMhOIv9eIZC",
+          "name": "Qdrant-wlsgur"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n\"질문\" :  {{ $('When chat message received').item.json.chatInput }},\n\"참고 문서\" : {{ JSON.stringify($json.result.points.map(item => item.payload.text.replaceAll(\"\\n\",\"\").trim())) }}\n}",
+        "options": {
+          "systemMessage": "당신은 ER은행 여신 규정 전문 상담사입니다.\n\n\"참고 문서\"로 전달한  【검색된 규정 원문】을 근거로 질문에 답변하세요.\n\n【규칙】\n- 반드시 검색된 원문에 있는 내용만으로 답변하세요\n- \"참고문서\"로 답변할수 없는 질문은 \"해당 내용은 검색된 규정에서 찾을 수 없습니다\"라고 답하세요\n- 답변 끝에 반드시 출처(조항 번호)를 명시하세요\n\n【응답 형식 — JSON】\n{\n  \"답변\": \"개인사업자 신용대출 최대 한도는 3억원입니다.\",\n  \"출처\": \"여신취급세칙 제23조 제1항\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1648,
+        304
+      ],
+      "id": "ac7ee548-8d28-473d-ad6d-0ed0b1d96cf1",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.1",
+          "mode": "list",
+          "cachedResultName": "gpt-5.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1696,
+        496
+      ],
+      "id": "34be26e8-60a2-4a8d-858c-ba24cb5c03a7",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "6726tmMPJ5ZxwQlp",
+          "name": "Eruty"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2080,
+        304
+      ],
+      "id": "319902aa-c8a7-42b6-b12d-cc4c1b833fec",
+      "name": "When chat message received",
+      "webhookId": "bc85e27c-f7d4-47eb-a72f-01e9faeabb76"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 80,
+        "width": 1136,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        112
+      ],
+      "id": "e79835cc-a539-48f2-841c-f04954848b73",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1wo8Y9_d1qRFar9OkA8EDn6b9tjdwVoDV",
+          "mode": "list",
+          "cachedResultName": "RAG Trigger",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1wo8Y9_d1qRFar9OkA8EDn6b9tjdwVoDV"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        -96
+      ],
+      "id": "d2a26efc-3842-4a7f-9f98-b62f410f8a17",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vSWnLCtbIOkyVHON",
+          "name": "n8n-hyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1856,
+        -96
+      ],
+      "id": "a5fe2a47-b88a-4671-a541-5cc49884d3fa",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vSWnLCtbIOkyVHON",
+          "name": "n8n-hyeok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "point",
+        "operation": "upsertPoints",
+        "collectionName": {
+          "__rl": true,
+          "value": "Company-Report",
+          "mode": "list",
+          "cachedResultName": "Company-Report"
+        },
+        "points": "={{\n  [\n    {\n      id: $itemIndex,\n      payload: { \n        text: $json.chunk\n      },\n      vector: {\n        dense: {\n          text: $json.chunk,\n          model: \"sentence-transformers/all-minilm-l6-v2\"\n        },\n        sparse: {\n          text: $json.chunk,\n          model: \"qdrant/bm25\"\n        }\n      }\n    }\n  ].toJsonString()\n}}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        -96
+      ],
+      "id": "3f987f4b-079b-40ce-b8f2-989047ee54ed",
+      "name": "Upsert Points1",
+      "executeOnce": false,
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "uAOs1DMhOIv9eIZC",
+          "name": "Qdrant-wlsgur"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.text; // PDF에서 추출된 텍스트\n\nconst chunkSize = 1000; // 글자 수 기준 (조절 가능)\nconst overlap = 200; // 겹침 (문맥 유지용)\n\nlet chunks = [];\n\nfor (let i = 0; i < text.length; i += (chunkSize - overlap)) {\n  chunks.push({\n    chunk: text.slice(i, i + chunkSize)\n  });\n}\n\nreturn chunks.map(c => ({ json: c }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        -96
+      ],
+      "id": "b626d6ec-6f34-476d-bde5-f3e5441ccee3",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Points": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Query Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Upsert Points1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "84c859ad-9543-4de7-8bfc-2217a43e51c7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4c37afc9752fe67a196d8ee9ceed60ac48080b0f49495b537873718f58ac1ca4"
+  },
+  "id": "XHINKhYRU8BIVZdC",
+  "tags": []
+}
