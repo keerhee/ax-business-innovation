@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Track1 — 실습 사전 준비 Tip</title>
+<style>
+  :root{
+    --bg:#0b1020;--bg-card:#141a2e;--border:#1f2742;
+    --text:#e6e9f2;--muted:#9aa3c7;
+    --accent:#5b8def;--accent-2:#7be0b6;--warn:#ffb86b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:0;background:linear-gradient(180deg,#0a0e1f,#0d1430);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    line-height:1.7;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:880px;margin:0 auto;padding:56px 24px 96px}
+  .back{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;color:var(--muted);margin-bottom:24px;
+  }
+  .eyebrow{
+    display:inline-block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent-2);
+    border:1px solid rgba(123,224,182,.35);padding:5px 11px;border-radius:999px;
+    background:rgba(123,224,182,.08);margin-bottom:18px;
+  }
+  h1{font-size:34px;font-weight:700;margin:0 0 10px;letter-spacing:-.01em}
+  .lead{color:var(--muted);font-size:16px;margin:0 0 32px;max-width:720px}
+  h2{
+    font-size:21px;font-weight:700;margin:48px 0 14px;
+    padding-left:12px;border-left:3px solid var(--accent);
+  }
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--text)}
+  p,li{color:#cdd3eb}
+  p{margin:0 0 12px}
+  ul,ol{padding-left:22px;margin:0 0 14px}
+  li{margin:5px 0}
+  code{
+    background:rgba(91,141,239,.12);
+    padding:2px 6px;border-radius:4px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.92em;color:#dde4ff;
+  }
+  pre{
+    background:#0e1530;border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow-x:auto;font-size:13.5px;
+    color:#cdd3eb;
+  }
+  pre code{background:none;padding:0;color:inherit;font-size:inherit}
+  table{
+    width:100%;border-collapse:collapse;
+    background:var(--bg-card);border:1px solid var(--border);border-radius:10px;
+    overflow:hidden;font-size:14px;margin:12px 0 8px;
+  }
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:rgba(91,141,239,.08);color:var(--text);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  tr:last-child td{border-bottom:none}
+  hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+  .callout{
+    background:rgba(255,184,107,.08);border:1px solid rgba(255,184,107,.35);
+    border-radius:10px;padding:14px 16px;margin:14px 0;
+    color:#ffe6c4;font-size:14px;
+  }
+  .badge{
+    display:inline-block;background:rgba(91,141,239,.15);
+    border:1px solid rgba(91,141,239,.4);
+    color:var(--text);padding:3px 9px;border-radius:5px;
+    font-size:12px;font-weight:500;margin:0 4px 4px 0;
+  }
+  footer{
+    margin-top:64px;padding-top:20px;
+    border-top:1px solid var(--border);
+    color:var(--muted);font-size:13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 강의노트 메인으로</a>
+  <span class="eyebrow">Prereq · 사전 준비</span>
+  <h1>실습 사전 준비 Tip</h1>
+  <p class="lead">
+    W1~W6 실습을 진행하기 전에 필요한 환경 설정과 외부 서비스 연동 가이드입니다.
+    각 주차 실습가이드와 함께 참고하세요.
+  </p>
+  <p style="font-size:13px;color:var(--muted)">
+    원본 문서: <a href="Tip_source.docx">Tip_source.docx</a>
+  </p>
+
+  <hr>
+
+  <h2>1. 실습 파일(.json) Import</h2>
+  <p>각 주차 폴더(<code>W1 실습/</code> ~ <code>W5 실습/</code>)에 들어 있는 <code>.json</code> 파일을 n8n으로 가져옵니다.</p>
+  <ol>
+    <li>제공된 실습 파일(<code>W*.json</code>) 다운로드</li>
+    <li>n8n에서 <strong>Create workflow</strong> 클릭</li>
+    <li><strong>Import from file</strong> 선택 → 1번에서 받은 <code>.json</code> 파일 지정</li>
+  </ol>
+
+  <h2>2. Google OAuth2 인증 (Sheets / Gmail / Calendar)</h2>
+  <p>n8n 노드에서 <strong>Sign in with Google</strong> 만으로 즉시 연결 가능한 서비스:</p>
+  <ul>
+    <li>Google Sheets</li>
+    <li>Gmail</li>
+    <li>Google Calendar</li>
+  </ul>
+  <p>각 노드의 Credential에서 <code>Sign in with Google</code> 버튼을 누르고 본인 Google 계정으로 인증하면 됩니다.</p>
+
+  <h2>3. Google Cloud Console로 OAuth 클라이언트 직접 발급</h2>
+  <p><code>Google Drive</code>, <code>Google Docs</code> 같이 추가 권한이 필요한 라이브러리는 <strong>Google Cloud Console</strong>에서 직접 OAuth 클라이언트를 만들어야 합니다.</p>
+
+  <h3>3-1. Google Cloud Console 작업</h3>
+  <ol>
+    <li><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> 접속</li>
+    <li><strong>새 프로젝트 생성</strong> → 프로젝트 선택</li>
+    <li><strong>API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기</strong></li>
+    <li>입력값
+      <ul>
+        <li><strong>애플리케이션 유형</strong>: <code>웹 애플리케이션</code></li>
+        <li><strong>이름</strong>: 임의의 애플리케이션 이름</li>
+        <li><strong>승인된 리디렉션 URI</strong>: <code>https://oauth.n8n.cloud/oauth2/callback</code></li>
+      </ul>
+    </li>
+    <li>발급된 <strong>Client ID</strong>와 <strong>Client Secret</strong> 복사</li>
+    <li><strong>OAuth 동의 화면 → 테스트 사용자 추가</strong>: 본인 Google 계정 추가</li>
+  </ol>
+
+  <h3>3-2. n8n에 등록</h3>
+  <p>n8n 해당 노드의 Credential 화면에서:</p>
+  <table>
+    <thead><tr><th>Google Cloud Console</th><th>n8n Credential</th></tr></thead>
+    <tbody>
+      <tr><td>클라이언트 ID</td><td>Client ID</td></tr>
+      <tr><td>클라이언트 보안 비밀번호</td><td>Client Secret</td></tr>
+    </tbody>
+  </table>
+  <p>값을 입력한 뒤 <strong>OAuth 인증</strong> 버튼을 눌러 연결을 마칩니다.</p>
+
+  <h2>4. Slack Webhook 생성</h2>
+  <p>메시지를 보낼 <strong>각 채널별로</strong> 아래 1~3을 반복합니다.</p>
+  <ol>
+    <li>Slack에서 <strong>채널 세부 정보 열기</strong></li>
+    <li><strong>앱 추가</strong></li>
+    <li><strong>앱 설치</strong> (Incoming Webhooks 등)</li>
+    <li>발급된 Webhook URL을 n8n Slack/HTTP Request 노드의 URL에 입력</li>
+  </ol>
+  <div class="callout">
+    ⚠️ <strong>보안 주의</strong>: Webhook URL은 곧 인증입니다. 외부에 공개되지 않도록 주의하고, 실수로 노출되면 즉시 폐기·재발급하세요.
+  </div>
+
+  <h2>5. OpenAI API Key 발급</h2>
+  <ol>
+    <li><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI Platform</a>에서 <strong>API Key 발급</strong></li>
+    <li><strong>API Key는 최초 생성 시에만 전문 확인 가능</strong> → 안전한 장소에 보관</li>
+    <li><strong>Billing</strong>
+      <ul>
+        <li>충전된 금액(Credit) 만큼 API 호출 가능</li>
+        <li>모델별로 토큰당 비용이 다르므로 사용량에 따라 Credit 소진 속도가 달라짐</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h2>6. Qdrant 벡터 DB (RAG 실습용)</h2>
+  <p>추가 학습(RAG) 실습에서 사용하는 벡터 DB입니다.</p>
+  <ol>
+    <li><a href="https://cloud.qdrant.io/" target="_blank" rel="noopener">Qdrant Cloud</a> 계정 생성 후 <strong>클러스터 생성</strong></li>
+    <li>클러스터 생성 직후 자동 발급되는 <strong>API Key</strong>는 한 번만 전문 확인 가능 → 반드시 안전하게 보관</li>
+    <li><strong>Cluster Endpoint</strong>도 함께 메모해두기 (둘 다 n8n Credential에 필요)</li>
+    <li><strong>Collection 생성</strong> (벡터 저장 단위)</li>
+    <li>n8n Qdrant 노드의 Credential에 <strong>API Key</strong>와 <strong>Cluster Endpoint</strong> 입력</li>
+  </ol>
+
+  <h2>7. 워크플로우 색상 코딩 시스템</h2>
+  <p>n8n 캔버스에서 노드를 색상으로 구분합니다.</p>
+  <table>
+    <thead><tr><th>색상</th><th>역할</th></tr></thead>
+    <tbody>
+      <tr><td>🔵 파란색</td><td>데이터 입력 / 수집 노드</td></tr>
+      <tr><td>🟢 초록색</td><td>처리 / 변환 노드</td></tr>
+      <tr><td>🟡 노란색</td><td>조건 / 분기 노드</td></tr>
+      <tr><td>🔴 빨간색</td><td>알림 / 에러 처리 노드</td></tr>
+      <tr><td>🟣 보라색</td><td>외부 API 호출 노드</td></tr>
+    </tbody>
+  </table>
+  <p>워크플로우를 만들 때 이 컨벤션을 따르면 흐름 파악이 쉬워집니다.</p>
+
+  <h2>8. n8n 셀프 호스팅 (Docker Desktop)</h2>
+  <h3>셀프 호스팅의 장점</h3>
+  <ul>
+    <li>데이터 보안 / 프라이버시</li>
+    <li>워크플로우 호출량 제한 없음</li>
+    <li>비용 절감</li>
+    <li>커스텀 노드 사용 가능</li>
+  </ul>
+
+  <h3>8-1. Docker Desktop 설치</h3>
+  <ul>
+    <li>Windows: Docker Desktop for Windows</li>
+    <li>macOS: Docker Desktop for Mac</li>
+  </ul>
+
+  <h3>8-2. n8n 컨테이너 실행</h3>
+  <ol>
+    <li><strong>n8n Image Pull</strong>: <code>docker pull n8nio/n8n</code></li>
+    <li><strong>n8n Container Run</strong>: 다음 옵션을 설정해 실행</li>
+  </ol>
+  <table>
+    <thead><tr><th>옵션</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td>Host : Container</td><td>내 컴퓨터(호스트)와 도커 내부 가상 공간</td></tr>
+      <tr><td>Port</td><td>내 컴퓨터의 포트를 컨테이너의 <code>5678</code> 포트로 연결</td></tr>
+      <tr><td>Volumes</td><td>컨테이너 삭제 시에도 데이터를 유지하기 위해 내 컴퓨터 경로를 연결</td></tr>
+      <tr><td>Environment variables</td><td>컨테이너 실행 시 참조할 환경설정 변수</td></tr>
+    </tbody>
+  </table>
+  <p>자세한 설정은 <a href="https://docs.n8n.io/hosting/installation/docker/" target="_blank" rel="noopener">n8n 공식 Docker 문서</a> 참고.</p>
+
+  <h3>8-3. GUI 접속</h3>
+  <ul>
+    <li>브라우저에서 <code>http://localhost:5678</code> 접속</li>
+    <li>최초 접속 시 계정 생성 후 워크플로우 작업 가능</li>
+  </ul>
+
+  <h2>9. Gmail 바닥글 "n8n" 문구 제거</h2>
+  <p>n8n에서 Gmail 노드로 메일을 보내면 본문 하단에 다음 문구가 자동으로 붙습니다:</p>
+  <pre><code>---
+This email was sent automatically with n8n</code></pre>
+  <p>이 문구를 제거하려면 Gmail 노드 옵션에서:</p>
+  <ol>
+    <li><strong>Add option</strong> 클릭</li>
+    <li><code>Append n8n Attribution</code> 항목 추가</li>
+    <li>기본값 <strong>True → False</strong>로 변경</li>
+  </ol>
+
+  <hr>
+
+  <h2>참고: 키 관리 체크리스트</h2>
+  <table>
+    <thead><tr><th>항목</th><th>발급 위치</th><th>주의사항</th></tr></thead>
+    <tbody>
+      <tr><td>Google OAuth Client ID/Secret</td><td>Google Cloud Console</td><td>리디렉션 URI를 <code>https://oauth.n8n.cloud/oauth2/callback</code>로 정확히 입력</td></tr>
+      <tr><td>Slack Webhook URL</td><td>Slack 채널 → 앱 추가 → Incoming Webhooks</td><td>URL 자체가 인증, 노출 시 즉시 폐기</td></tr>
+      <tr><td>OpenAI API Key</td><td>platform.openai.com</td><td>발급 직후만 전문 확인 가능, Credit 잔액 모니터링</td></tr>
+      <tr><td>Qdrant API Key + Endpoint</td><td>cloud.qdrant.io</td><td>API Key는 발급 직후만 확인 가능</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    발급한 모든 키는 <strong>GitHub 등 공개 저장소에 절대 commit하지 말 것</strong>.
+    실습 <code>.json</code> 파일에 키가 들어 있다면 placeholder로 교체 후 공유하세요.
+  </div>
+
+  <footer>
+    <a href="../index.html">← 강의노트 메인</a>
+  </footer>
+</div>
+</body>
+</html>
