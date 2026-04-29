@@ -78,29 +78,21 @@
   .toc a{color:var(--muted)}
   .toc a:hover{color:var(--text)}
 
-  /* CTA */
-  .cta-box{
-    background:linear-gradient(135deg,rgba(91,141,239,.12),rgba(123,224,182,.08));
-    border:1px solid rgba(91,141,239,.35);
-    border-radius:16px;
-    padding:28px 28px;
-    margin:0 0 56px;
-    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  /* CTA — 자료 섹션으로의 inline anchor (다른 섹션과 톤 통일) */
+  .cta-inline{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:18px 0 8px;margin:0 0 8px;
+    border-bottom:1px solid var(--border);
     flex-wrap:wrap;
   }
-  .cta-box .cta-text{flex:1;min-width:260px}
-  .cta-box .cta-text strong{
-    display:block;font-size:20px;font-weight:700;margin-bottom:4px;
+  .cta-inline .lead-link{
+    font-size:18px;font-weight:600;color:var(--text);
+    display:inline-flex;align-items:center;gap:6px;
   }
-  .cta-box .cta-text span{color:var(--muted);font-size:14px}
-  .cta-btn{
-    display:inline-flex;align-items:center;gap:8px;
-    background:var(--accent);color:#fff;
-    padding:14px 22px;border-radius:10px;
-    font-weight:600;font-size:15px;
-    transition:transform .15s ease,background .15s ease;
-  }
-  .cta-btn:hover{background:#3f74e6;transform:translateY(-1px);text-decoration:none}
+  .cta-inline .lead-link:hover{color:var(--accent);text-decoration:none}
+  .cta-inline .lead-link .arrow{transition:transform .15s ease;display:inline-block}
+  .cta-inline .lead-link:hover .arrow{transform:translateX(3px)}
+  .cta-inline .sub-text{color:var(--muted);font-size:13.5px;flex:1;text-align:right;min-width:240px}
 
   /* SECTIONS */
   section{margin:0 0 48px}
@@ -186,13 +178,10 @@
     <a href="#prereq">사전 준비</a>
   </nav>
 
-  <a href="manuals/Bank_Track1_AX_main_v3.html" class="cta-box" style="text-decoration:none">
-    <div class="cta-text">
-      <strong>온라인으로 바로 열람하기 →</strong>
-      <span>매뉴얼 · 주차별 실습가이드 · 사전 준비 Tip을 브라우저에서 바로 확인하세요.</span>
-    </div>
-    <span class="cta-btn">메인 매뉴얼 열기 →</span>
-  </a>
+  <div class="cta-inline">
+    <a href="#materials" class="lead-link">온라인으로 바로 열람하기 <span class="arrow">→</span></a>
+    <span class="sub-text">매뉴얼 · 주차별 실습가이드 · 사전 준비 Tip을 브라우저에서 바로 확인하세요.</span>
+  </div>
 
   <section id="overview">
     <h2>커리큘럼 개요</h2>
