@@ -78,21 +78,6 @@
   .toc a{color:var(--muted)}
   .toc a:hover{color:var(--text)}
 
-  /* CTA — 자료 섹션으로의 inline anchor (다른 섹션과 톤 통일) */
-  .cta-inline{
-    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-    padding:18px 0 8px;margin:0 0 8px;
-    border-bottom:1px solid var(--border);
-    flex-wrap:wrap;
-  }
-  .cta-inline .lead-link{
-    font-size:18px;font-weight:600;color:var(--text);
-    display:inline-flex;align-items:center;gap:6px;
-  }
-  .cta-inline .lead-link:hover{color:var(--accent);text-decoration:none}
-  .cta-inline .lead-link .arrow{transition:transform .15s ease;display:inline-block}
-  .cta-inline .lead-link:hover .arrow{transform:translateX(3px)}
-  .cta-inline .sub-text{color:var(--muted);font-size:13.5px;flex:1;text-align:right;min-width:240px}
 
   /* SECTIONS */
   section{margin:0 0 48px}
@@ -177,11 +162,6 @@
     <a href="#how">학습 방법</a>
     <a href="#prereq">사전 준비</a>
   </nav>
-
-  <div class="cta-inline">
-    <a href="#materials" class="lead-link">온라인으로 바로 열람하기 <span class="arrow">→</span></a>
-    <span class="sub-text">매뉴얼 · 주차별 실습가이드 · 사전 준비 Tip을 브라우저에서 바로 확인하세요.</span>
-  </div>
 
   <section id="overview">
     <h2>커리큘럼 개요</h2>
