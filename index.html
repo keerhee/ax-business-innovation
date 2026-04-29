@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Track1 — AX 업무혁신 강의노트</title>
+<meta name="description" content="은행권 AX(AI Transformation) 업무혁신 — n8n 기반 워크플로우 자동화 실습 (W1~W6) + RAG 추가학습">
+<style>
+  :root{
+    --bg:#0b1020;
+    --bg-card:#141a2e;
+    --border:#1f2742;
+    --text:#e6e9f2;
+    --muted:#9aa3c7;
+    --accent:#5b8def;
+    --accent-2:#7be0b6;
+    --warn:#ffb86b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,#0a0e1f 0%,#0b1020 40%,#0d1430 100%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    line-height:1.65;
+    min-height:100vh;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:980px;margin:0 auto;padding:64px 24px 96px}
+
+  /* HERO */
+  .eyebrow{
+    display:inline-block;
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent-2);
+    border:1px solid rgba(123,224,182,.35);
+    padding:6px 12px;border-radius:999px;
+    background:rgba(123,224,182,.08);
+    margin-bottom:24px;
+  }
+  h1{
+    font-size:clamp(28px,4.5vw,44px);
+    line-height:1.25;margin:0 0 14px;
+    letter-spacing:-.01em;font-weight:700;
+  }
+  .sub{
+    color:var(--muted);font-size:clamp(15px,1.6vw,18px);
+    margin:0 0 36px;max-width:760px;
+  }
+
+  /* META CARDS */
+  .meta{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+    margin:0 0 40px;
+  }
+  @media (max-width:720px){.meta{grid-template-columns:repeat(2,1fr)}}
+  .meta-card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  .meta-card .k{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:6px;
+  }
+  .meta-card .v{font-size:15px;font-weight:600;color:var(--text)}
+
+  /* TOC */
+  .toc{
+    display:flex;flex-wrap:wrap;gap:8px 18px;
+    color:var(--muted);font-size:14px;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    padding:14px 0;margin:0 0 36px;
+  }
+  .toc a{color:var(--muted)}
+  .toc a:hover{color:var(--text)}
+
+  /* CTA */
+  .cta-box{
+    background:linear-gradient(135deg,rgba(91,141,239,.12),rgba(123,224,182,.08));
+    border:1px solid rgba(91,141,239,.35);
+    border-radius:16px;
+    padding:28px 28px;
+    margin:0 0 56px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    flex-wrap:wrap;
+  }
+  .cta-box .cta-text{flex:1;min-width:260px}
+  .cta-box .cta-text strong{
+    display:block;font-size:20px;font-weight:700;margin-bottom:4px;
+  }
+  .cta-box .cta-text span{color:var(--muted);font-size:14px}
+  .cta-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--accent);color:#fff;
+    padding:14px 22px;border-radius:10px;
+    font-weight:600;font-size:15px;
+    transition:transform .15s ease,background .15s ease;
+  }
+  .cta-btn:hover{background:#3f74e6;transform:translateY(-1px);text-decoration:none}
+
+  /* SECTIONS */
+  section{margin:0 0 48px}
+  h2{
+    font-size:22px;font-weight:700;margin:0 0 18px;
+    padding-left:12px;border-left:3px solid var(--accent);
+  }
+  p{margin:0 0 12px;color:#cdd3eb}
+  ul{margin:0 0 12px;padding-left:22px;color:#cdd3eb}
+  li{margin:4px 0}
+
+  /* CARDS GRID */
+  .cards{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+  }
+  @media (max-width:720px){.cards{grid-template-columns:1fr}}
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    transition:border-color .15s ease,transform .15s ease;
+  }
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card a{display:block}
+  .card .ttl{font-weight:700;font-size:16px;color:var(--text);margin:0 0 4px}
+  .card .desc{color:var(--muted);font-size:13.5px;margin:0}
+  .card .tag{
+    display:inline-block;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent-2);
+    margin-bottom:8px;
+  }
+
+  table{
+    width:100%;border-collapse:collapse;
+    background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+    overflow:hidden;font-size:14px;
+  }
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:rgba(91,141,239,.08);color:var(--text);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  tr:last-child td{border-bottom:none}
+  td:first-child{color:var(--accent);font-weight:600;white-space:nowrap}
+
+  footer{
+    margin-top:64px;padding-top:24px;
+    border-top:1px solid var(--border);
+    color:var(--muted);font-size:13px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+  footer a{color:var(--muted)}
+
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .badge{
+    background:rgba(91,141,239,.12);
+    border:1px solid rgba(91,141,239,.35);
+    color:var(--text);
+    padding:4px 10px;border-radius:6px;
+    font-size:12px;font-weight:500;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">Bank Track1 · 강의노트</span>
+  <h1>AX 업무혁신 강의노트</h1>
+  <p class="sub">
+    은행권 AX(AI Transformation) 업무혁신 6주 종합 커리큘럼 + RAG 추가학습 —
+    n8n 기반 워크플로우 자동화 실습 자료입니다.
+  </p>
+
+  <div class="meta">
+    <div class="meta-card"><div class="k">Duration</div><div class="v">6주 + α (RAG)</div></div>
+    <div class="meta-card"><div class="k">Level</div><div class="v">입문 → 실무</div></div>
+    <div class="meta-card"><div class="k">Tooling</div><div class="v">n8n · OpenAI · Qdrant</div></div>
+    <div class="meta-card"><div class="k">Update</div><div class="v">2026-04</div></div>
+  </div>
+
+  <nav class="toc">
+    <a href="#overview">커리큘럼 개요</a>
+    <a href="#materials">자료 구조</a>
+    <a href="#how">학습 방법</a>
+    <a href="#prereq">사전 준비</a>
+  </nav>
+
+  <a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_AX업무혁신_v3.html" class="cta-box" style="text-decoration:none">
+    <div class="cta-text">
+      <strong>온라인으로 바로 열람하기 →</strong>
+      <span>매뉴얼 · 주차별 실습가이드 · 사전 준비 Tip을 브라우저에서 바로 확인하세요.</span>
+    </div>
+    <span class="cta-btn">메인 매뉴얼 열기 →</span>
+  </a>
+
+  <section id="overview">
+    <h2>커리큘럼 개요</h2>
+    <p>
+      n8n 워크플로우와 LLM(OpenAI), 벡터DB(Qdrant)를 활용해 은행 실무에서 반복되는
+      문서 분류·여신심사·결재·고객응대 업무를 자동화하는 실습 중심 커리큘럼입니다.
+      매주 실습 시트(.xlsx)·워크플로우 정의(.json)·이메일/Slack 예시 이미지가 함께 제공됩니다.
+    </p>
+    <div class="badge-row">
+      <span class="badge">n8n</span>
+      <span class="badge">Google Sheets / Gmail / Calendar</span>
+      <span class="badge">Slack Webhook</span>
+      <span class="badge">OpenAI</span>
+      <span class="badge">Qdrant (RAG)</span>
+      <span class="badge">Docker Self-host</span>
+    </div>
+  </section>
+
+  <section id="materials">
+    <h2>자료 구조</h2>
+
+    <h3 style="margin:18px 0 10px;color:var(--muted);font-size:13px;letter-spacing:.12em;text-transform:uppercase">매뉴얼 (HTML 직접 열람)</h3>
+    <div class="cards">
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_AX업무혁신_v3.html">
+        <span class="tag">Main</span>
+        <p class="ttl">AX 업무혁신 본 매뉴얼</p>
+        <p class="desc">전체 커리큘럼 개요 · 흐름 · 핵심 개념</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_실습_사전준비_Tip.md">
+        <span class="tag">Prereq</span>
+        <p class="ttl">실습 사전 준비 Tip</p>
+        <p class="desc">n8n / Google OAuth / Slack Webhook / OpenAI / Qdrant / Docker</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_W1_실습가이드.html">
+        <span class="tag">W1</span>
+        <p class="ttl">Week 1 실습가이드</p>
+        <p class="desc">기본 워크플로우 — 데이터 수집 · 트리거</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_W2_실습가이드.html">
+        <span class="tag">W2</span>
+        <p class="ttl">Week 2 실습가이드</p>
+        <p class="desc">이메일 자동 분류 (경미 · 주의 · 위험)</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_W3_실습가이드.html">
+        <span class="tag">W3</span>
+        <p class="ttl">Week 3 실습가이드</p>
+        <p class="desc">여신심사 · 대출 신청 접수 · 캘린더 연동</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_W4_실습가이드.html">
+        <span class="tag">W4</span>
+        <p class="ttl">Week 4 실습가이드</p>
+        <p class="desc">자동 이메일 응답 워크플로우</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_W5_실습가이드.html">
+        <span class="tag">W5</span>
+        <p class="ttl">Week 5 실습가이드</p>
+        <p class="desc">결재 흐름 (자동 / 팀장 / 본부 위임) + Slack</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_W6_실습가이드.html">
+        <span class="tag">W6</span>
+        <p class="ttl">Week 6 실습가이드</p>
+        <p class="desc">종합 시나리오 · 통합 자동화</p></a></div>
+      <div class="card"><a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_추가학습(RAG)_실습가이드.html">
+        <span class="tag">+RAG</span>
+        <p class="ttl">추가학습 (RAG) 실습가이드</p>
+        <p class="desc">Qdrant 임베딩 · RAG Trigger · 금융기관 여신운용세칙 검색</p></a></div>
+    </div>
+
+    <h3 style="margin:24px 0 10px;color:var(--muted);font-size:13px;letter-spacing:.12em;text-transform:uppercase">실습 자료 (워크플로우·시트·예시 이미지)</h3>
+    <table>
+      <thead><tr><th>주차</th><th>구성</th><th>주제</th></tr></thead>
+      <tbody>
+        <tr><td><a href="W1 실습/">W1</a></td><td>JSON · 시트 · 스크린샷</td><td>기본 워크플로우</td></tr>
+        <tr><td><a href="W2 실습/">W2</a></td><td>JSON · 시트 · 이메일 예시 3종</td><td>이메일 분류</td></tr>
+        <tr><td><a href="W3 실습/">W3</a></td><td>JSON · 시트 · 여신심사 폴더 · 캘린더 예시</td><td>여신심사 / 대출 접수</td></tr>
+        <tr><td><a href="W4 실습/">W4</a></td><td>JSON · 시트 · 이메일 예시</td><td>자동 이메일 응답</td></tr>
+        <tr><td><a href="W5 실습/">W5</a></td><td>JSON · 시트 · 이메일 / Slack 예시</td><td>결재 흐름</td></tr>
+        <tr><td><a href="추가 학습(RAG)/">+RAG</a></td><td>JSON · Qdrant 임베딩 · 여신운용세칙 PDF</td><td>RAG 추가학습</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="how">
+    <h2>학습 방법</h2>
+    <ol style="color:#cdd3eb">
+      <li>먼저 <a href="Bank_AX_매뉴얼/Bank_AX/Bank_Track1_실습_사전준비_Tip.md">사전 준비 Tip</a> 으로 n8n / Google OAuth / Slack Webhook / OpenAI API Key / Qdrant 환경을 갖춥니다.</li>
+      <li>각 주차의 실습가이드 HTML을 열어 흐름을 먼저 이해합니다.</li>
+      <li>해당 주차 폴더의 <code>W*.json</code>을 n8n에 import → 시트(.xlsx)와 예시 이미지로 동작을 검증합니다.</li>
+      <li>막히는 부분이 있으면 본 매뉴얼의 색상 코딩 시스템(🔵 입력 / 🟢 처리 / 🟡 분기 / 🔴 알림 / 🟣 외부 API)을 따라 노드를 점검합니다.</li>
+    </ol>
+  </section>
+
+  <section id="prereq">
+    <h2>사전 준비 — 필수 키와 계정</h2>
+    <table>
+      <thead><tr><th>항목</th><th>발급 위치</th><th>주의</th></tr></thead>
+      <tbody>
+        <tr><td>Google OAuth Client</td><td>Google Cloud Console</td><td>리디렉션 URI: <code>https://oauth.n8n.cloud/oauth2/callback</code></td></tr>
+        <tr><td>Slack Webhook URL</td><td>Slack 채널 → 앱 추가</td><td>URL 자체가 인증 — 외부 노출 금지</td></tr>
+        <tr><td>OpenAI API Key</td><td>platform.openai.com</td><td>발급 직후만 전문 확인 가능</td></tr>
+        <tr><td>Qdrant API Key + Endpoint</td><td>cloud.qdrant.io</td><td>Endpoint도 같이 보관</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;color:var(--warn);font-size:13.5px">
+      ⚠️ 발급한 키는 절대 GitHub 등 공개 저장소에 commit하지 마세요. 실습 JSON에 키가 들어 있다면 placeholder로 교체 후 공유하세요.
+    </p>
+  </section>
+
+  <footer>
+    <span>© 2026 · Bank Track1 AX 업무혁신 — 학습용 자료</span>
+    <span><a href="https://github.com/keerhee/ax-business-innovation">GitHub Repository ↗</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
