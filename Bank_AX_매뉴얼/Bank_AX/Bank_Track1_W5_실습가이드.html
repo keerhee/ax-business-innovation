@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W5 실습 — 여신 금액·등급별 자동 승인 경로 분기</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root{
+  --bg:#0d0f1a;--surface:#151829;--card:#1a1e35;--border:#252a45;
+  --text:#c8cce0;--text-dim:#6b7194;--white:#f0f2ff;
+  --accent:#5b8def;--accent-glow:rgba(91,141,239,.12);
+  --orange:#ff9f43;--blue:#5b8def;--red:#ff6b6b;--green:#2ed573;
+  --purple:#a78bfa;--yellow:#ffd43b;--teal:#4ecdc4;--pink:#f472b6;
+  --fh:46px;--radius:14px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.8;padding-bottom:var(--fh);-webkit-font-smoothing:antialiased}
+
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--teal));z-index:1000;transition:width .15s;width:0}
+#sf{position:fixed;bottom:0;left:0;right:0;height:var(--fh);background:#0a0c15;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:999}
+#sf .lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)}
+#sf .ttl{font-size:11px;font-weight:700;color:var(--accent);max-width:55%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sf .pct{font-size:10px;color:var(--text-dim)}
+
+.hero{background:linear-gradient(170deg,#0d1225 0%,#111d3a 40%,#0d1a28 100%);padding:56px 20px 48px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;top:-100px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(91,141,239,.1) 0%,transparent 70%)}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(78,205,196,.07) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(91,141,239,.25);border-radius:20px;padding:5px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.hero-week{font-size:56px;font-weight:900;line-height:1;margin-bottom:8px;letter-spacing:-2px}
+.hero-week span{background:linear-gradient(135deg,var(--accent),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero h1{font-size:21px;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.4}
+.hero-sub{font-size:13px;color:var(--text-dim)}
+.hero-meta{display:flex;justify-content:center;gap:16px;margin-top:24px;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim)}
+.hero-meta-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.container{max-width:720px;margin:0 auto;padding:0 16px}
+section{padding:40px 0 0}.divider{height:1px;background:var(--border);margin:40px 0 0}
+.eyebrow{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+h2{font-size:20px;font-weight:900;color:var(--white);margin-bottom:14px;line-height:1.35}
+h3{font-size:14px;font-weight:700;color:var(--white);margin:20px 0 10px}
+p{margin-bottom:10px;font-size:13px;line-height:1.85}
+
+.callout{background:var(--card);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:16px 18px;margin:14px 0;font-size:13px;line-height:1.75}
+.callout.orange{border-left-color:var(--orange);background:rgba(255,159,67,.06)}
+.callout.blue{border-left-color:var(--blue);background:rgba(91,141,239,.08)}
+.callout.green{border-left-color:var(--green);background:rgba(46,213,115,.06)}
+.callout.red{border-left-color:var(--red);background:rgba(255,107,107,.06)}
+.callout.teal{border-left-color:var(--teal);background:rgba(78,205,196,.06)}
+.callout.purple{border-left-color:var(--purple);background:rgba(167,139,250,.08)}
+.callout strong{color:var(--white)}
+
+.persona{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:14px 0}
+.persona-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.persona-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:3px}
+.persona-role{font-size:11px;color:var(--accent);margin-bottom:6px}
+.persona-desc{font-size:12px;color:var(--text-dim);line-height:1.7}
+
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.ba-card{border-radius:12px;padding:16px;border:1px solid var(--border)}
+.ba-card.before{background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.2)}
+.ba-card.after{background:rgba(46,213,115,.06);border-color:rgba(46,213,115,.2)}
+.ba-label{font-size:9px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.ba-card.before .ba-label{color:var(--red)}.ba-card.after .ba-label{color:var(--green)}
+.ba-item{font-size:11px;color:var(--text);padding:3px 0;line-height:1.6}
+
+/* ── 3-ROUTE VISUAL ── */
+.route-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0}
+.route-card{border-radius:12px;padding:16px 12px;text-align:center;border:1px solid}
+.route-card.r1{background:rgba(46,213,115,.06);border-color:rgba(46,213,115,.25)}
+.route-card.r2{background:rgba(255,159,67,.06);border-color:rgba(255,159,67,.25)}
+.route-card.r3{background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.25)}
+.route-emoji{font-size:28px;margin-bottom:6px}
+.route-label{font-size:11px;font-weight:900;letter-spacing:1px;margin-bottom:4px}
+.route-card.r1 .route-label{color:var(--green)}
+.route-card.r2 .route-label{color:var(--orange)}
+.route-card.r3 .route-label{color:var(--red)}
+.route-cond{font-size:9px;color:var(--text-dim);margin-bottom:6px;line-height:1.5}
+.route-action{font-size:10px;color:var(--text);line-height:1.5}
+
+/* ── HYBRID DIAGRAM ── */
+.hybrid-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:16px 0}
+.hybrid-title{font-size:12px;font-weight:700;color:var(--white);margin-bottom:14px;text-align:center}
+.hybrid-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.hybrid-node{border-radius:8px;padding:8px 12px;font-size:10px;font-weight:700;text-align:center;min-width:70px;line-height:1.4}
+.hn-trigger{background:var(--red);color:#fff}
+.hn-ai{background:var(--purple);color:#fff}
+.hn-set{background:var(--orange);color:#fff}
+.hn-switch{background:var(--blue);color:#fff}
+.hn-out-g{background:rgba(46,213,115,.15);color:var(--green);border:1px solid rgba(46,213,115,.3)}
+.hn-out-o{background:rgba(255,159,67,.15);color:var(--orange);border:1px solid rgba(255,159,67,.3)}
+.hn-out-r{background:rgba(255,107,107,.15);color:var(--red);border:1px solid rgba(255,107,107,.3)}
+.hn-log{background:rgba(78,205,196,.15);color:var(--teal);border:1px solid rgba(78,205,196,.3)}
+.hybrid-arrow{color:var(--text-dim);font-size:14px;flex-shrink:0}
+.hybrid-note{font-size:10px;color:var(--text-dim);margin-top:10px;line-height:1.6;border-top:1px solid var(--border);padding-top:10px}
+
+/* ── STEP CARDS ── */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin:14px 0;overflow:hidden;transition:border-color .3s}
+.step-card:hover{border-color:var(--accent)}
+.step-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.step-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
+.step-num.s1{background:linear-gradient(135deg,var(--red),#dc2626)}
+.step-num.s2{background:linear-gradient(135deg,var(--purple),#7c3aed)}
+.step-num.s3{background:linear-gradient(135deg,var(--orange),#d97706)}
+.step-num.s4{background:linear-gradient(135deg,var(--blue),#2563eb)}
+.step-num.s5{background:linear-gradient(135deg,var(--green),#16a34a)}
+.step-num.s6{background:linear-gradient(135deg,var(--teal),#0d9488)}
+.step-info{flex:1}
+.step-title{font-size:13px;font-weight:700;color:var(--white);line-height:1.4}
+.step-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+.step-toggle{font-size:16px;color:var(--text-dim);transition:transform .3s;flex-shrink:0}
+.step-card.open .step-toggle{transform:rotate(180deg)}
+.step-body{max-height:0;overflow:hidden;transition:max-height .4s ease;border-top:0 solid var(--border)}
+.step-card.open .step-body{max-height:6000px;border-top-width:1px}
+.step-content{padding:18px}
+
+.code-block{background:#0c0e18;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:var(--teal);overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.code-block .comment{color:var(--text-dim)}.code-block .key{color:var(--orange)}.code-block .val{color:var(--green)}.code-block .hi{color:var(--accent);font-weight:700}.code-block .prompt{color:var(--pink)}
+
+.data-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}
+.data-table thead th{background:#1e2245;color:var(--accent);padding:10px 10px;text-align:left;font-size:10px;font-weight:700;border-bottom:1px solid var(--border)}
+.data-table tbody td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+.data-table tbody tr:hover td{background:rgba(91,141,239,.04)}
+
+.new-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(91,141,239,.15);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+
+.prompt-block{background:linear-gradient(135deg,#15102a,#1a1535);border:1px solid rgba(167,139,250,.2);border-radius:var(--radius);padding:18px;margin:14px 0}
+.prompt-label{font-size:9px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+.prompt-text{font-size:12px;color:var(--text);line-height:1.85;white-space:pre-wrap}
+.prompt-text .role{color:var(--pink);font-weight:700}
+.prompt-text .rule{color:var(--orange)}
+.prompt-text .example{color:var(--teal)}
+
+.ai-output{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:14px 0}
+.ai-output-header{background:rgba(167,139,250,.08);padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;color:var(--purple);letter-spacing:1px}
+.ai-output-body{padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:var(--teal)}
+
+.tip-grid{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.tip-item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.tip-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.tip-text{font-size:12px;color:var(--text);line-height:1.7}
+.tip-text strong{color:var(--white)}
+
+.check-list{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.check-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .2s;user-select:none}
+.check-item:hover{border-color:var(--accent)}
+.check-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:11px;color:transparent}
+.check-item.checked .check-box{background:var(--green);border-color:var(--green);color:#fff}
+.check-label{font-size:12px;color:var(--text);line-height:1.5}
+.check-item.checked .check-label{color:var(--green)}
+
+/* ── DECISION MATRIX ── */
+.matrix-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.matrix-header{background:linear-gradient(135deg,#1e2245,#252a55);padding:14px 18px;font-size:12px;font-weight:700;color:var(--white)}
+.matrix-body{padding:0}
+.matrix-table{width:100%;border-collapse:collapse;font-size:10px}
+.matrix-table th{background:#1a1e35;color:var(--accent);padding:10px;text-align:center;font-weight:700;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.matrix-table td{padding:10px;text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);color:var(--text);vertical-align:middle}
+.matrix-table td:last-child,.matrix-table th:last-child{border-right:none}
+.m-green{background:rgba(46,213,115,.08);color:var(--green);font-weight:700}
+.m-orange{background:rgba(255,159,67,.08);color:var(--orange);font-weight:700}
+.m-red{background:rgba(255,107,107,.08);color:var(--red);font-weight:700}
+
+.context-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.context-header{background:linear-gradient(135deg,#1e2345,#252a55);padding:16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.context-icon{font-size:24px;flex-shrink:0}
+.context-title{font-size:14px;font-weight:700;color:var(--white);line-height:1.4}
+.context-subtitle{font-size:11px;color:var(--text-dim);margin-top:2px}
+.context-body{padding:18px}
+
+.tag{display:inline-flex;align-items:center;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;margin:1px}
+.tag.n8n{background:rgba(255,159,67,.15);color:var(--orange)}
+.tag.ai{background:rgba(167,139,250,.15);color:var(--purple)}
+.tag.slack{background:rgba(78,205,196,.12);color:var(--teal)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.animate{animation:fadeUp .5s ease both}
+@media(max-width:500px){.ba-grid,.route-grid{grid-template-columns:1fr}.hero-week{font-size:44px}.hybrid-row{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="sf">
+  <span class="lbl">W5</span>
+  <span class="ttl" id="sf-t">여신 금액·등급별 자동 승인 경로 분기</span>
+  <span class="pct" id="sf-p">0%</span>
+</div>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="hero-badge">🏦 Phase 2 · AI + 조건 분기 결합</div>
+  <div class="hero-week"><span>W5</span></div>
+  <h1>여신 금액·등급별 자동 승인 경로 분기</h1>
+  <p class="hero-sub">GPT AI 분석 + IF/Switch 조건 분기 = 하이브리드 의사결정</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="dot" style="background:var(--purple)"></div>GPT AI Agent</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--blue)"></div>IF / Switch</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--teal)"></div>Slack</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--red)"></div>Gmail</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--text-dim)"></div>약 90분</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════ W4 복습 + 핵심 차이 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Recap & What's New</div>
+  <h2>🔄 W4 → W5: 무엇이 달라지나?</h2>
+
+  <div class="callout teal">
+    <strong>W4:</strong> AI가 텍스트를 읽고 <strong>"분류"</strong>만 해줬습니다. (이메일 → 5종 분류)<br>
+    <strong>W5:</strong> AI가 <strong>"분석"</strong>까지 합니다. (재무 데이터 → 위험도 평가 + 1문단 요약)<br><br>
+    그리고 AI 분석 결과 + <strong>금액 조건</strong>(숫자 규칙)을 결합해서 최종 경로를 결정합니다.<br>
+    <strong>AI 판단 + 규칙 판단 = 하이브리드 분기</strong> — 이것이 W5의 핵심!
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 1. 상황 설정 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Context · 왜 이 실습을 하나요?</div>
+  <h2>🏢 상황 설정: 승인 결재가 3일이나 걸려요</h2>
+
+  <div class="persona">
+    <div class="persona-avatar" style="background:linear-gradient(135deg,var(--accent),var(--teal))">👨‍💼</div>
+    <div>
+      <div class="persona-name">이준혁 차장</div>
+      <div class="persona-role">ER은행 여신심사팀 · 심사 총괄</div>
+      <div class="persona-desc">
+        여신 신청이 들어오면 금액과 고객 상태에 따라 승인 경로가 다릅니다. 소액·우량이면 바로 자동승인, 중간 규모면 팀장 결재, 대규모면 본부 심사위원회 위임. 문제는 이 판단을 사람이 하나씩 하다보니 <strong>승인까지 평균 3일</strong>이 걸린다는 겁니다. 특히 업종 위험도 분석은 심사역마다 기준이 달라 일관성도 떨어집니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout orange">
+    <strong>😩 이준혁 차장의 고민</strong><br>
+    "소액 우량 건까지 팀장 결재를 받느라 시간이 낭비돼요. 업종 위험도도 심사역마다 달리 평가하고. AI가 일관된 기준으로 초기 분석을 해주고, 금액에 따라 자동으로 경로를 나눠주면 좋겠어요."
+  </div>
+
+  <!-- 3경로 시각화 -->
+  <h3>📊 여신 승인 3경로</h3>
+  <div class="route-grid">
+    <div class="route-card r1">
+      <div class="route-emoji">✅</div>
+      <div class="route-label">자동승인</div>
+      <div class="route-cond">1억 미만 AND<br>AI 위험도 "낮음"</div>
+      <div class="route-action">즉시 승인 처리<br>+ 신청자 통보</div>
+    </div>
+    <div class="route-card r2">
+      <div class="route-emoji">👤</div>
+      <div class="route-label">팀장승인</div>
+      <div class="route-cond">1억~10억 OR<br>AI 위험도 "보통"</div>
+      <div class="route-action">팀장 이메일<br>+ Slack DM</div>
+    </div>
+    <div class="route-card r3">
+      <div class="route-emoji">🏛️</div>
+      <div class="route-label">본부위임</div>
+      <div class="route-cond">10억 초과 OR<br>AI 위험도 "높음"</div>
+      <div class="route-action">본부 심사위원회<br>+ 담당임원 알림</div>
+    </div>
+  </div>
+
+  <!-- 의사결정 매트릭스 -->
+  <div class="matrix-box">
+    <div class="matrix-header">📋 의사결정 매트릭스 — 금액 × AI 위험도</div>
+    <div class="matrix-body">
+      <table class="matrix-table">
+        <thead>
+          <tr><th></th><th>AI 위험도 "낮음"</th><th>AI 위험도 "보통"</th><th>AI 위험도 "높음"</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:700;color:var(--white)">1억 미만</td><td class="m-green">✅ 자동승인</td><td class="m-orange">👤 팀장승인</td><td class="m-red">🏛️ 본부위임</td></tr>
+          <tr><td style="font-weight:700;color:var(--white)">1억~10억</td><td class="m-orange">👤 팀장승인</td><td class="m-orange">👤 팀장승인</td><td class="m-red">🏛️ 본부위임</td></tr>
+          <tr><td style="font-weight:700;color:var(--white)">10억 초과</td><td class="m-red">🏛️ 본부위임</td><td class="m-red">🏛️ 본부위임</td><td class="m-red">🏛️ 본부위임</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <strong>💡 핵심: 왜 AI + 규칙을 함께 쓰나요?</strong><br>
+    <strong>금액</strong>은 숫자니까 IF/Switch로 판단 가능 (W2에서 배운 것).<br>
+    <strong>업종 위험도</strong>는 "이 업종이 요즘 경기 어때?" 같은 판단이라 AI가 필요 (W4에서 배운 것).<br><br>
+    W5 = <strong>W2(규칙 분기) + W4(AI 판단)을 결합</strong>한 것입니다!
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 2. 완성 구조 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Goal · 오늘 만들 워크플로</div>
+  <h2>🎯 완성 워크플로 구조</h2>
+
+  <div class="hybrid-box">
+    <div class="hybrid-title">📌 Sheets Trigger → AI 분석 → 금액+위험도 복합 분기 → 3경로 처리</div>
+    <div class="hybrid-row">
+      <div class="hybrid-node hn-trigger">📋 Sheets<br>Trigger</div>
+      <div class="hybrid-arrow">→</div>
+      <div class="hybrid-node hn-ai">🤖 GPT<br>AI Agent</div>
+      <div class="hybrid-arrow">→</div>
+      <div class="hybrid-node hn-set">⚙️ Set<br>결과 파싱</div>
+      <div class="hybrid-arrow">→</div>
+      <div class="hybrid-node hn-switch">🔀 Switch<br>3경로 분기</div>
+    </div>
+    <div class="hybrid-row" style="justify-content:center;gap:16px">
+      <div class="hybrid-node hn-out-g">✅ 자동승인<br>Gmail + Sheets</div>
+      <div class="hybrid-node hn-out-o">👤 팀장승인<br>Gmail + Slack</div>
+      <div class="hybrid-node hn-out-r">🏛️ 본부위임<br>Gmail + Slack</div>
+    </div>
+    <div class="hybrid-row" style="justify-content:flex-end">
+      <div class="hybrid-node hn-log">📊 심사이력 Sheets 기록 (전 경로 공통)</div>
+    </div>
+    <div class="hybrid-note">
+      <strong>W4와 다른 점:</strong> W4는 AI 분류 결과만으로 Switch → W5는 AI 분석 + 금액 조건을 <strong>결합</strong>해서 Switch. 이것이 "하이브리드 분기"!
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 3. 사전 준비 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Preparation · 시작 전 준비</div>
+  <h2>📋 사전 준비 (10분)</h2>
+
+  <div class="step-card open" id="prep1">
+    <div class="step-header" onclick="toggle('prep1')">
+      <div class="step-num s1">A</div>
+      <div class="step-info">
+        <div class="step-title">여신 신청 시트 (확장 버전) 만들기</div>
+        <div class="step-sub">심사 이력 시트 포함</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>1. Google Sheets에 <strong>「여신신청_심사」</strong> 시트를 만듭니다. W1보다 열이 많습니다:</p>
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>신청인</th><th>이메일</th><th>업종</th><th>신청금액(만원)</th><th>신용등급</th><th>부채비율(%)</th><th>영업이익률(%)</th><th>담당심사역</th></tr></thead>
+          <tbody>
+            <tr><td>A건설</td><td>a@test.com</td><td style="color:var(--green)">건설업</td><td style="color:var(--green)">5000</td><td style="color:var(--green)">AA</td><td>120</td><td>8.5</td><td>김철수</td></tr>
+            <tr><td>B유통</td><td>b@test.com</td><td style="color:var(--orange)">도소매업</td><td style="color:var(--orange)">50000</td><td style="color:var(--orange)">BBB</td><td>200</td><td>3.2</td><td>이영수</td></tr>
+            <tr><td>C테크</td><td>c@test.com</td><td>IT서비스</td><td>8000</td><td>A</td><td>80</td><td>15.3</td><td>김철수</td></tr>
+            <tr><td>D물류</td><td>d@test.com</td><td style="color:var(--red)">해운업</td><td style="color:var(--red)">200000</td><td style="color:var(--red)">BB</td><td>350</td><td>-2.1</td><td>박영미</td></tr>
+            <tr><td>E식품</td><td>e@test.com</td><td>식품제조</td><td>3000</td><td>A+</td><td>90</td><td>11.7</td><td>이영수</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="callout">
+          <strong>💡 기대 경로:</strong> A건설(5천만·AA) → <span style="color:var(--green)">자동승인</span> / B유통(5억·BBB) → <span style="color:var(--orange)">팀장승인</span> / C테크(8천만·A) → <span style="color:var(--green)">자동승인</span> / D물류(200억·BB) → <span style="color:var(--red)">본부위임</span> / E식품(3천만·A+) → <span style="color:var(--green)">자동승인</span>
+        </div>
+      </div>
+
+         <div class="step-content">
+        <p>2. Google Sheets에 <strong>「여신신청_이력」</strong> 시트를 만듭니다. 빈 테이블로 생성하여 AI의 자동 분류 이력을 관리합니다.</p>
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>접수일시</th><th>신청인</th><th>업종</th><th>신청금액</th><th>신용등급</th><th>AI위험도</th><th>승인경로</th><th>분석요약</th></tr></thead>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="prep2">
+    <div class="step-header" onclick="toggle('prep2')">
+      <div class="step-num s6">B</div>
+      <div class="step-info">
+        <div class="step-title">Slack Webhook 준비</div>
+        <div class="step-sub">팀장·본부 알림용 Slack 채널 Webhook</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>Slack에서 2개 채널의 <strong>Incoming Webhook URL</strong>을 준비합니다:</p>
+        <p><strong>1.</strong> <code style="color:var(--orange)">#여신-팀장승인</code> 채널 → Webhook URL 복사</p>
+        <p><strong>2.</strong> <code style="color:var(--red)">#여신-본부위임</code> 채널 → Webhook URL 복사</p>
+        <div class="callout">
+          Slack → 채널 세부 정보 열기 → 통합 → 앱 추가 → <strong>"Incoming WebHooks"</strong> 설치 → 채널에 앱 추가
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 4. 실습 단계 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Step-by-Step · 모범답안 가이드</div>
+  <h2>🔧 실습: 워크플로 만들기 (60분)</h2>
+
+  <!-- STEP 1: Trigger -->
+  <div class="step-card" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num s1">1</div>
+      <div class="step-info">
+        <div class="step-title">Sheets Trigger + AI Agent Node</div>
+        <div class="step-sub">⏱ 약 20분 · GPT에게 업종 위험도 분석 시키기</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>Sheets Trigger는 W1과 동일합니다. 핵심은 <strong>AI Agent 프롬프트</strong>입니다.</p>
+
+        <div class="code-block"><span class="comment">// Sheets Trigger → "여신신청_심사" 시트 / Row Added</span>
+<span class="comment">// AI Agent Node 기본 설정 (W4와 동일)</span>
+<span class="key">Chat Model:</span>  <span class="val">GPT-sonnet-4-20250514</span>
+<span class="key">Max Tokens:</span> <span class="val">500</span>  <span class="comment">← W4보다 길게 (분석 요약 포함)</span></div>
+
+        <h3>📝 System Prompt — 업종 위험도 분석</h3>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 System Prompt</div>
+          <div class="prompt-text"><span class="role">당신은 ER은행 여신 심사 전문가입니다.</span>
+
+기업의 업종, 신용등급, 재무 수치(부채비율, 영업이익률)를 종합 분석하여 여신 위험도를 평가하세요.
+
+<span class="rule">【위험도 판정 기준】
+- "낮음": 신용등급 A 이상 AND 부채비율 150% 이하 AND 영업이익률 5% 이상
+- "보통": 위의 조건 중 1~2개 미달 OR 신용등급 BBB
+- "높음": 신용등급 BB 이하 OR 부채비율 300% 초과 OR 영업이익률 마이너스</span>
+
+<span class="rule">【응답 형식 — 반드시 JSON으로만 응답】</span>
+<span class="example">{
+  "위험도": "낮음",
+  "분석요약": "건설업 AA등급, 부채비율 120%로 업종 평균 이하, 영업이익률 8.5%로 안정적. 우량 차주로 판단.",
+  "주의사항": "건설업 경기 변동에 따른 모니터링 필요"
+}</span>
+
+<span class="rule">JSON 외에 다른 텍스트를 절대 추가하지 마세요.</span></div>
+        </div>
+
+        <p><strong>User Message:</strong></p>
+        <div class="code-block"><span class="prompt">기업명: {{ $json.신청인 }}
+업종: {{ $json.업종 }}
+신용등급: {{ $json.신용등급 }}
+부채비율: {{ $json['부채비율(%)'] }}%
+영업이익률: {{ $json['영업이익률(%)'] }}%
+신청금액: {{ $json['신청금액(만원)'] }}만원</span></div>
+
+        <h3>✅ 테스트 확인</h3>
+        <div class="ai-output">
+          <div class="ai-output-header">🤖 GPT 응답 예시 — A건설</div>
+          <div class="ai-output-body">{
+  "<span class="key">위험도</span>": "<span class="val">낮음</span>",
+  "<span class="key">분석요약</span>": "<span class="val">건설업 AA등급, 부채비율 120%로 업종 평균 대비 양호, 영업이익률 8.5%로 수익성 안정적. 우량 차주로 판단.</span>",
+  "<span class="key">주의사항</span>": "<span class="val">건설업 경기 사이클에 따른 분기별 모니터링 권고</span>"
+}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Set — 복합 분기 조건 생성 -->
+  <div class="step-card" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num s2">2</div>
+      <div class="step-info">
+        <div class="step-title">Set 노드 — AI 결과 + 금액 조건 결합</div>
+        <div class="step-sub">⏱ 약 10분 · 🆕 최종 경로를 여기서 결정!</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 Core Pattern</div>
+        <p>이번 Set 노드가 W5의 <strong>핵심</strong>입니다. AI 위험도와 금액을 <strong>동시에 판단</strong>해서 최종 경로를 결정합니다.</p>
+        <div class="code-block">
+<span class="comment">// Set 노드 — AI 결과 파싱 + 최종 경로 결정</span>
+<span class="key">AI위험도:</span>   <span class="val">{{ JSON.parse($json.output).위험도 }}</span>
+<span class="key">분석요약:</span>   <span class="val">{{ JSON.parse($json.output).분석요약 }}</span>
+<span class="key">주의사항:</span>   <span class="val">{{ JSON.parse($json.output).주의사항 }}</span>
+
+<span class="comment">// 원본 데이터 참조</span>
+<span class="key">신청인:</span>     <span class="val">{{ $('Google Sheets Trigger').item.json.신청인 }}</span>
+<span class="key">이메일:</span>     <span class="val">{{ $('Google Sheets Trigger').item.json.이메일 }}</span>
+<span class="key">신청금액:</span>   <span class="val">{{ $('Google Sheets Trigger').item.json['신청금액(만원)'] }}</span>
+<span class="key">업종:</span>       <span class="val">{{ $('Google Sheets Trigger').item.json.업종 }}</span>
+<span class="key">신용등급:</span>   <span class="val">{{ $('Google Sheets Trigger').item.json.신용등급 }}</span>
+
+<span class="comment">// ★ 핵심: 최종 경로 결정 (Expression)</span>
+<span class="key">승인경로:</span>   <span class="hi">{{(() => {
+  const amt = Number($('Google Sheets Trigger').item.json['신청금액(만원)']);
+  const risk = JSON.parse($json.output).위험도;
+  if (amt >= 100000 || risk === '높음') return '본부위임';
+  if (amt >= 10000 || risk === '보통') return '팀장승인';
+  return '자동승인';
+})()}}
+</span></div>
+
+        <div class="callout purple">
+          <strong>💡 Expression 안에서 if문 쓰기!</strong><br>
+          <code>{{ }}</code> 안에서 JavaScript의 if/else를 사용할 수 있습니다. 위 코드를 말로 풀면:<br><br>
+          <strong>1.</strong> 금액 10억 이상 OR AI 위험도 "높음" → <strong>"본부위임"</strong><br>
+          <strong>2.</strong> 금액 1억 이상 OR AI 위험도 "보통" → <strong>"팀장승인"</strong><br>
+          <strong>3.</strong> 나머지 (소액 + 낮은 위험) → <strong>"자동승인"</strong><br><br>
+          ⚠️ <strong>순서가 중요!</strong> "본부위임"을 먼저 체크합니다. 10억이면 위험도와 관계없이 본부위임이니까요.
+        </div>
+
+        <h3>✅ 확인</h3>
+        <p>"Test step" → A건설은 "자동승인", B유통은 "팀장승인", D물류는 "본부위임"이 나오면 성공!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Switch 3경로 -->
+  <div class="step-card" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num s3">3</div>
+      <div class="step-info">
+        <div class="step-title">Switch 노드 — 3경로 분기</div>
+        <div class="step-sub">⏱ 약 5분 · W4에서 배운 Switch 활용</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="code-block"><span class="comment">// Switch 노드 설정</span>
+<span class="key">Mode:</span>       <span class="val">Rules</span>
+<span class="key">Data Type:</span>  <span class="val">String</span>
+<span class="key">Value:</span>      <span class="val">{{ $json.승인경로 }}</span>
+
+<span class="hi">Output 0:</span>  <span class="val">Equal → "자동승인"</span>
+<span class="hi">Output 1:</span>  <span class="val">Equal → "팀장승인"</span>
+<span class="hi">Output 2:</span>  <span class="val">Equal → "본부위임"</span></div>
+
+        <p>W4의 Switch(5경로)와 동일한 패턴. 이번에는 3경로입니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: 자동승인 경로 -->
+  <div class="step-card" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num s4">4</div>
+      <div class="step-info">
+        <div class="step-title">경로 ① 자동승인 — 즉시 처리 + 신청자 통보</div>
+        <div class="step-sub">⏱ 약 10분 · Gmail로 승인 완료 이메일</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>Switch Output 0 → Gmail 노드 연결</p>
+
+        <div class="code-block"><span class="comment">// Gmail — 자동승인 통보</span>
+<span class="key">To:</span>       <span class="val">{{ $json.이메일 }}</span>  <span class="comment">← 신청 고객에게</span>
+<span class="key">Subject:</span>  <span class="val">[ER은행] 여신 승인 완료 — {{ $json.신청인 }}</span>
+<span class="key">Message:</span>  <span class="comment">(HTML)</span></div>
+
+        <div class="code-block" style="font-size:10px">&lt;div style="font-family:sans-serif;max-width:560px;padding:24px"&gt;
+  &lt;div style="background:<span class="hi">#d1fae5</span>;border-left:4px solid <span class="hi">#10b981</span>;padding:14px;border-radius:0 8px 8px 0"&gt;
+    &lt;strong&gt;✅ 여신 승인이 완료되었습니다&lt;/strong&gt;
+  &lt;/div&gt;
+  &lt;p&gt;&lt;strong&gt;{{ $json.신청인 }}&lt;/strong&gt;님의 {{ $json.업종 }} 여신 신청이 승인되었습니다.&lt;/p&gt;
+  &lt;table style="width:100%;border-collapse:collapse;margin:16px 0"&gt;
+    &lt;tr style="background:#f0fdf4"&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;승인 금액&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ Number($json.신청금액).toLocaleString() }}만원&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;승인 유형&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;자동승인 (소액·우량)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;p&gt;🤖 &lt;strong&gt;AI 심사 의견:&lt;/strong&gt; {{ $json.분석요약 }}&lt;/p&gt;
+&lt;/div&gt;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: 팀장승인 + 본부위임 -->
+  <div class="step-card" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num s5">5</div>
+      <div class="step-info">
+        <div class="step-title">경로 ② 팀장승인 + 경로 ③ 본부위임</div>
+        <div class="step-sub">⏱ 약 15분 · Gmail + Slack 동시 알림</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <h3>경로 ② 팀장승인</h3>
+        <p>Switch Output 1 → Gmail(팀장 이메일) + Slack(#여신-팀장승인) 병렬 연결</p>
+
+        <div class="code-block"><span class="comment">// Gmail — 팀장 승인 요청</span>
+<span class="key">To:</span>       <span class="val">teamlead@ERbank.com</span>
+<span class="key">Subject:</span>  <span class="val">[승인요청] {{ $json.신청인 }} — {{ Number($json.신청금액).toLocaleString() }}만원</span>
+<span class="key">본문:</span>      <span class="val">아래 참고</span></div>
+
+ <div class="code-block">&lt;div style="font-family:sans-serif;max-width:560px;padding:24px"&gt;
+  &lt;div style="background:#ffedd5;border-left:4px solid #f97316;padding:14px;border-radius:0 8px 8px 0"&gt;
+    &lt;strong&gt;❗️팀장 승인이 필요합니다.&lt;/strong&gt;
+  &lt;/div&gt;
+  &lt;p&gt;&lt;strong&gt;{{ $json.신청인 }}&lt;/strong&gt;님의 {{ $json.업종 }} 여신 신청이 접수되었습니다.&lt;/p&gt;
+  &lt;table style="width:100%;border-collapse:collapse;margin:16px 0"&gt;
+    &lt;tr style="background:#ffedd5"&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;신청 금액&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ Number($json.신청금액).toLocaleString() }}만원&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;승인 유형&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;팀장승인&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;AI 위험도&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ $json['AI위험도'] }}&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;주의사항&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ $json['주의사항'] }}&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;p&gt;🤖 &lt;strong&gt;AI 심사 의견:&lt;/strong&gt; {{ $json.분석요약 }}&lt;/p&gt;
+&lt;/div&gt;
+</div>
+
+<div class="code-block"><span class="comment">// Slack Webhook — #여신-팀장승인 채널</span>
+  <span class="key">Method:</span>  <span class="val">POST</span>
+  <span class="key">URL:</span>     <span class="val">(팀장승인 채널 Webhook URL)</span>
+  <span class="key">Body:</span>
+  {
+      "<span class="key">text</span>": "<span class="val">👤 *팀장 승인 요청*
+━━━━━━━━━━━
+🏢 {{ $json.신청인 }} ({{ $json.업종 }})
+💰 {{ Number($json.신청금액).toLocaleString() }}만원
+📊 신용등급: {{ $json.신용등급 }} · AI위험도: {{ $json.AI위험도 }}
+🤖 {{ $json.분석요약 }}
+⚠️ {{ $json.주의사항 }}</span>"
+  }
+</div>
+
+<h3>경로 ③ 본부위임</h3>
+<p>Switch Output 2 → 동일 구조, 어조만 강화:</p>
+        <div class="code-block"><span class="comment">//  Gmail — 본부 위임 요청</span>
+<span class="key">To:</span>          <span class="val">committee@ERbank.com</span>
+<span class="key">Subject:</span>     <span class="val">🚨[본부심사 위임] {{ $json.신청인 }} — {{ Number($json.신청금액).toLocaleString() }}만원</span>
+<span class="key">CC:</span>          <span class="val">executive@ERbank.com</span>
+<span class="key">본문:</span>         <span class="val">아래 참고</span></div>
+<div class="code-block">&lt;div style="font-family:sans-serif;max-width:560px;padding:24px"&gt;
+  &lt;div style="background:#fee2e2;border-left:4px solid #ef4444;padding:14px;border-radius:0 8px 8px 0"&gt;
+    &lt;strong&gt;‼️ 본부 위임건 입니다.&lt;/strong&gt;
+  &lt;/div&gt;
+  &lt;p&gt;&lt;strong&gt;{{ $json.신청인 }}&lt;/strong&gt;님의 {{ $json.업종 }} 여신 신청이 접수되었습니다.&lt;/p&gt;
+  &lt;table style="width:100%;border-collapse:collapse;margin:16px 0"&gt;
+    &lt;tr style="background:#fee2e2"&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;신청 금액&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ Number($json.신청금액).toLocaleString() }}만원&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;승인 유형&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;팀장승인&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;AI 위험도&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ $json['AI위험도'] }}&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold"&gt;주의사항&lt;/td&gt;
+      &lt;td style="padding:8px 12px;border:1px solid #ddd"&gt;{{ $json['주의사항'] }}&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;p&gt;🤖 &lt;strong&gt;AI 심사 의견:&lt;/strong&gt; {{ $json.분석요약 }}&lt;/p&gt;
+&lt;/div&gt;
+</div>
+
+        <div class="code-block"><span class="comment">// Slack Webhook — #여신-팀장승인 채널</span>
+<span class="key">Method:</span>  <span class="val">POST</span>
+<span class="key">URL:</span>     <span class="val">(본부 위임 채널 Webhook URL)</span>
+<span class="key">Body:</span>
+{
+  "<span class="key">text</span>": "<span class="val">👤 *본부 위임 요청*
+━━━━━━━━━━━
+🏢 {{ $json.신청인 }} ({{ $json.업종 }})
+💰 {{ Number($json.신청금액).toLocaleString() }}만원
+📊 신용등급: {{ $json.신용등급 }} · AI위험도: {{ $json.AI위험도 }}
+🤖 {{ $json.분석요약 }}
+⚠️ {{ $json.주의사항 }}</span>"
+}</div>
+</div>
+    </div>
+  </div>
+
+  <!-- STEP 6: Sheets 이력 + 테스트 -->
+  <div class="step-card" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num s6">6</div>
+      <div class="step-info">
+        <div class="step-title">심사 이력 기록 + 전체 테스트</div>
+        <div class="step-sub">⏱ 약 10분 · 5건 테스트로 경로 정확도 확인</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <h3>📝 Sheets 이력 기록</h3>
+        <p><strong>Set 노드에서 병렬로</strong> Sheets 노드를 연결합니다 (Switch와 별개).</p>
+
+        <div class="code-block"><span class="comment">// 심사이력 시트 — Append Row</span>
+<span class="key">접수일시:</span>   <span class="val">{{ $now.format('yyyy-MM-dd HH:mm') }}</span>
+<span class="key">신청인:</span>    <span class="val">{{ $json.신청인 }}</span>
+<span class="key">업종:</span>      <span class="val">{{ $json.업종 }}</span>
+<span class="key">신청금액:</span>   <span class="val">{{ $json.신청금액 }}</span>
+<span class="key">신용등급:</span>   <span class="val">{{ $json.신용등급 }}</span>
+<span class="key">AI위험도:</span>   <span class="val">{{ $json.AI위험도 }}</span>
+<span class="key">승인경로:</span>   <span class="val">{{ $json.승인경로 }}</span>
+<span class="key">분석요약:</span>   <span class="val">{{ $json.분석요약 }}</span></div>
+
+        <h3>🧪 전체 테스트 — 5건 검증</h3>
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>기업</th><th>금액</th><th>등급</th><th>AI 위험도 (기대)</th><th>경로 (기대)</th></tr></thead>
+          <tbody>
+            <tr><td>A건설</td><td>5,000만</td><td>AA</td><td style="color:var(--green)">낮음</td><td style="color:var(--green)">✅ 자동승인</td></tr>
+            <tr><td>B유통</td><td>5억</td><td>BBB</td><td style="color:var(--orange)">보통</td><td style="color:var(--orange)">👤 팀장승인</td></tr>
+            <tr><td>C테크</td><td>8,000만</td><td>A</td><td style="color:var(--green)">낮음</td><td style="color:var(--green)">✅ 자동승인</td></tr>
+            <tr><td>D물류</td><td>200억</td><td>BB</td><td style="color:var(--red)">높음</td><td style="color:var(--red)">🏛️ 본부위임</td></tr>
+            <tr><td>E식품</td><td>3,000만</td><td>A+</td><td style="color:var(--green)">낮음</td><td style="color:var(--green)">✅ 자동승인</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="callout red">
+          <strong>⚠️ AI가 위험도를 다르게 판단할 수 있어요!</strong><br>
+          GPT의 판단은 매번 미세하게 다를 수 있습니다. B유통의 위험도가 "보통" 대신 "높음"으로 나올 수도 있어요. 이것은 AI의 특성입니다.<br><br>
+          <strong>대응 방법:</strong> 프롬프트의 판정 기준을 더 구체적으로 적거나, Set 노드에서 금액 기반 규칙을 우선 적용하면 일관성이 높아집니다.
+        </div>
+
+        <h3>🔧 자주 발생하는 문제</h3>
+        <div class="tip-grid">
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>Expression 안의 if문이 에러 나요</strong><br><code>{{ }}</code> 안에서 여러 줄 코드를 쓸 때, 줄바꿈 대신 세미콜론(;)으로 구분하거나, n8n의 <strong>Code 노드</strong>(JavaScript)를 대신 사용할 수 있습니다. Expression이 복잡하면 Code 노드가 더 편합니다.</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>금액이 텍스트로 인식돼요</strong><br>Sheets에서 가져온 숫자가 문자열일 수 있습니다. <code>Number($json['신청금액(만원)'])</code>로 명시적 변환하세요. 쉼표가 있으면 <code>.replace(/,/g, '')</code>로 제거 후 변환.</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>Slack 메시지가 한 줄로 나와요</strong><br>Slack Webhook에서 줄바꿈은 <code>\n</code>을 사용합니다. JSON Body 안에서 실제 줄바꿈을 넣으면 에러가 납니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 5. 체크리스트 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Self-Check · 완료 확인</div>
+  <h2>✅ W5 실습 완료 체크리스트</h2>
+
+  <div class="check-list" id="checklist">
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">AI Agent가 업종·신용등급·재무 수치로 위험도를 분석한다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Set 노드에서 AI 위험도 + 금액을 결합해 "승인경로" 필드를 생성한다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Switch 3경로(자동승인/팀장승인/본부위임)가 정확히 분기된다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">자동승인 → 신청자에게 승인 완료 이메일이 도착한다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">팀장승인 → Gmail + Slack #여신-팀장승인 채널에 알림이 간다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">본부위임 → Gmail + Slack #여신-본부위임 채널에 알림이 간다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">심사이력 시트에 5건 모두 기록된다 (경로·AI분석 포함)</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">5건 테스트 중 4건 이상 기대 경로와 일치한다</div>
+    </div>
+  </div>
+
+  <div id="completion-msg" style="display:none;text-align:center;margin:20px 0">
+    <div style="font-size:36px;margin-bottom:8px">🔀</div>
+    <div style="font-size:16px;font-weight:900;color:var(--green);margin-bottom:4px">W5 실습 완료! 하이브리드 분기 마스터!</div>
+    <div style="font-size:12px;color:var(--text-dim)">이준혁 차장의 승인 소요 시간: 3일 → 즉시~수시간</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 6. 핵심 개념 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Key Concepts · 오늘 배운 것</div>
+  <h2>📌 W5 핵심 개념 정리</h2>
+
+  <div class="tip-grid">
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--accent);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">H</div>
+      <div class="tip-text"><strong>하이브리드 분기</strong><br>AI 판단(텍스트 분석) + 규칙 판단(숫자 조건)을 결합. AI가 "위험도"를 매기고, IF 규칙이 "금액"을 체크해서 최종 경로를 결정합니다.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--purple);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">A</div>
+      <div class="tip-text"><strong>AI "분석" vs AI "분류"</strong><br>W4는 5개 라벨 중 하나를 고르는 <strong>분류</strong>. W5는 재무 데이터를 해석하고 근거를 제시하는 <strong>분석</strong>. 프롬프트가 더 구체적이고, 응답에 "요약"과 "주의사항"이 포함됩니다.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--orange);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">E</div>
+      <div class="tip-text"><strong>Expression 내 JavaScript</strong><br><code>{{ }}</code> 안에서 if/else, 변수 선언, 함수 호출이 모두 가능합니다. 복잡해지면 Code 노드(JavaScript 전용)로 분리하는 것이 깔끔합니다.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--teal);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📋</div>
+      <div class="tip-text"><strong>의사결정 매트릭스</strong><br>2개 축(금액 × 위험도)으로 경로를 결정하는 표. 실무에서 복잡한 승인 규칙을 시각화하고 n8n으로 구현할 때 반드시 먼저 그려봐야 합니다.</div>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <strong>🧱 Phase 2 중간 정리 (W4~W5)</strong><br>
+    <strong>W4:</strong> AI 분류 → Switch 분기 (AI만 판단)<br>
+    <strong>W5:</strong> AI 분석 + 규칙 결합 → Switch 분기 (AI + 규칙 하이브리드)<br><br>
+    다음 주(W6)에서는 각자 <strong>실제 부서 데이터</strong>로 end-to-end 파이프라인을 완성합니다!
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ W6 미리보기 ═══════ -->
+<section class="animate" style="padding-bottom:40px">
+  <div class="eyebrow">Next Week Preview</div>
+  <h2>👉 W6 미리보기</h2>
+  <div class="context-card">
+    <div class="context-header">
+      <div class="context-icon">📊</div>
+      <div>
+        <div class="context-title">부서별 실무 파이프라인 완성</div>
+        <div class="context-subtitle">여신·리스크팀: 재무제표 위험도 분석 / 영업·WM팀: 만기 고객 개인화 안내</div>
+      </div>
+    </div>
+    <div class="context-body">
+      <p>W6는 <strong>부서별 분반</strong>으로 진행됩니다. 여신·리스크팀은 기업 재무제표 자동 위험도 분석을, 영업·WM팀은 만기 도래 예금 고객에게 GPT가 맞춤 추천 문안을 생성하는 파이프라인을 완성합니다. Phase 2의 마무리 실전 프로젝트입니다.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <span class="tag n8n">n8n</span>
+        <span class="tag ai">GPT API</span>
+        <span class="tag slack">Gmail + Sheets</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div style="background:#0a0c15;color:#555;text-align:center;padding:24px 20px;font-size:10px;line-height:2;margin-bottom:var(--fh);border-top:1px solid var(--border)">
+  ER은행 AX 업무혁신 과정 · Track 1 · W5 실습 가이드 · 2026
+</div>
+
+<script>
+function toggle(id){document.getElementById(id).classList.toggle('open')}
+const sfP=document.getElementById('sf-p');const prog=document.getElementById('progress');
+function onScroll(){const sy=window.scrollY;const dh=document.documentElement.scrollHeight-window.innerHeight;const pct=Math.round((sy/Math.max(dh,1))*100);sfP.textContent=pct+'%';prog.style.width=pct+'%'}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+function updateProgress(){const items=document.querySelectorAll('#checklist .check-item');const checked=document.querySelectorAll('#checklist .check-item.checked');document.getElementById('completion-msg').style.display=checked.length===items.length?'block':'none'}
+</script>
+</body>
+</html>

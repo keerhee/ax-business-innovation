@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 실습 — 대출 서류 접수 자동 폴더 체계 생성</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #0d0f1a;
+  --surface: #151829;
+  --card: #1a1e35;
+  --border: #252a45;
+  --text: #c8cce0;
+  --text-dim: #6b7194;
+  --white: #f0f2ff;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59,130,246,.12);
+  --orange: #ff9f43;
+  --blue: #5b8def;
+  --red: #ff6b6b;
+  --green: #2ed573;
+  --purple: #a78bfa;
+  --yellow: #ffd43b;
+  --teal: #4ecdc4;
+  --pink: #f472b6;
+  --fh: 46px;
+  --radius: 14px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.8;padding-bottom:var(--fh);-webkit-font-smoothing:antialiased}
+
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--teal));z-index:1000;transition:width .15s;width:0}
+#sf{position:fixed;bottom:0;left:0;right:0;height:var(--fh);background:#0a0c15;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:999}
+#sf .lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)}
+#sf .ttl{font-size:11px;font-weight:700;color:var(--accent);max-width:55%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sf .pct{font-size:10px;color:var(--text-dim)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(170deg,#0d1225 0%,#111d3a 40%,#0d1a28 100%);padding:56px 20px 48px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;top:-100px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.1) 0%,transparent 70%)}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(78,205,196,.07) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:5px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.hero-week{font-size:56px;font-weight:900;color:var(--white);line-height:1;margin-bottom:8px;letter-spacing:-2px}
+.hero-week span{background:linear-gradient(135deg,var(--accent),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero h1{font-size:22px;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.4}
+.hero-sub{font-size:13px;color:var(--text-dim)}
+.hero-meta{display:flex;justify-content:center;gap:16px;margin-top:24px;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim)}
+.hero-meta-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.container{max-width:720px;margin:0 auto;padding:0 16px}
+section{padding:40px 0 0}
+.divider{height:1px;background:var(--border);margin:40px 0 0}
+.eyebrow{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+h2{font-size:20px;font-weight:900;color:var(--white);margin-bottom:14px;line-height:1.35}
+h3{font-size:14px;font-weight:700;color:var(--white);margin:20px 0 10px}
+p{margin-bottom:10px;font-size:13px;line-height:1.85;color:var(--text)}
+
+.callout{background:var(--card);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:16px 18px;margin:14px 0;font-size:13px;line-height:1.75}
+.callout.orange{border-left-color:var(--orange);background:rgba(255,159,67,.06)}
+.callout.blue{border-left-color:var(--blue);background:var(--accent-glow)}
+.callout.green{border-left-color:var(--green);background:rgba(46,213,115,.06)}
+.callout.red{border-left-color:var(--red);background:rgba(255,107,107,.06)}
+.callout.teal{border-left-color:var(--teal);background:rgba(78,205,196,.06)}
+.callout.purple{border-left-color:var(--purple);background:rgba(167,139,250,.06)}
+.callout strong{color:var(--white)}
+
+.persona{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:14px 0}
+.persona-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.persona-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:3px}
+.persona-role{font-size:11px;color:var(--accent);margin-bottom:6px}
+.persona-desc{font-size:12px;color:var(--text-dim);line-height:1.7}
+
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.ba-card{border-radius:12px;padding:16px;border:1px solid var(--border)}
+.ba-card.before{background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.2)}
+.ba-card.after{background:rgba(46,213,115,.06);border-color:rgba(46,213,115,.2)}
+.ba-label{font-size:9px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.ba-card.before .ba-label{color:var(--red)}
+.ba-card.after .ba-label{color:var(--green)}
+.ba-item{font-size:11px;color:var(--text);padding:3px 0;line-height:1.6}
+
+/* ── RECAP ── */
+.recap-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:14px 0;display:flex;gap:14px;align-items:flex-start}
+.recap-icon{font-size:22px;flex-shrink:0}
+.recap-text{font-size:12px;color:var(--text);line-height:1.7}
+.recap-text strong{color:var(--white)}
+
+/* ── 4-OUTPUT VISUAL ── */
+.output-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.output-card{border-radius:12px;padding:16px 14px;border:1px solid var(--border);text-align:center;transition:border-color .3s}
+.output-card:hover{border-color:var(--accent)}
+.output-emoji{font-size:28px;margin-bottom:8px}
+.output-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:4px}
+.output-desc{font-size:10px;color:var(--text-dim);line-height:1.55}
+.oc-drive{background:rgba(59,130,246,.05)}
+.oc-docs{background:rgba(91,141,239,.05)}
+.oc-cal{background:rgba(46,213,115,.05)}
+.oc-chat{background:rgba(255,212,59,.05)}
+
+/* ── FLOW VERTICAL ── */
+.flow{display:flex;flex-direction:column;gap:0;margin:16px 0}
+.flow-node{display:flex;align-items:flex-start;gap:12px;padding:14px 0;position:relative}
+.flow-node::before{content:'';position:absolute;left:17px;top:46px;bottom:-14px;width:2px;background:var(--border)}
+.flow-node:last-child::before{display:none}
+.flow-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0;z-index:1}
+.flow-icon.trigger{background:var(--red)}
+.flow-icon.set{background:var(--orange)}
+.flow-icon.drive{background:var(--accent)}
+.flow-icon.docs{background:var(--blue)}
+.flow-icon.cal{background:var(--green)}
+.flow-icon.chat{background:var(--yellow);color:#333}
+.flow-info{flex:1;padding-top:2px}
+.flow-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:3px}
+.flow-desc{font-size:11px;color:var(--text-dim);line-height:1.65}
+
+/* ── MULTI-OUTPUT DIAGRAM ── */
+.multi-diagram{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:16px 0}
+.multi-title{font-size:12px;font-weight:700;color:var(--white);margin-bottom:14px;text-align:center}
+.multi-row{display:flex;align-items:stretch;gap:8px;margin-bottom:8px}
+.multi-source{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:11px;font-weight:700;color:var(--white);display:flex;align-items:center;justify-content:center;min-width:90px;text-align:center}
+.multi-arrow{display:flex;align-items:center;color:var(--text-dim);font-size:14px;flex-shrink:0}
+.multi-targets{display:flex;flex-direction:column;gap:6px;flex:1}
+.multi-target{border-radius:8px;padding:8px 12px;font-size:10px;line-height:1.5;border:1px solid}
+.mt-drive{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.25);color:var(--accent)}
+.mt-docs{background:rgba(91,141,239,.08);border-color:rgba(91,141,239,.25);color:var(--blue)}
+.mt-cal{background:rgba(46,213,115,.08);border-color:rgba(46,213,115,.25);color:var(--green)}
+.mt-chat{background:rgba(255,212,59,.08);border-color:rgba(255,212,59,.25);color:var(--yellow)}
+
+/* ── STEP CARDS ── */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin:14px 0;overflow:hidden;transition:border-color .3s}
+.step-card:hover{border-color:var(--accent)}
+.step-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.step-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
+.step-num.s1 {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+}
+.step-num.s22 {
+  background: linear-gradient(135deg, #8b5cf6, #c026d3);
+}
+.step-num.s2 {
+  background: linear-gradient(135deg, #c026d3, #f97316);
+}
+.step-num.s3 {
+  background: linear-gradient(135deg, #f97316, #2563eb);
+}
+.step-num.s4 {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+}
+.step-num.s42 {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+.step-num.s5 {
+  background: linear-gradient(135deg, #7c3aed, #16a34a);
+}
+.step-num.s6 {
+  background: linear-gradient(135deg, #16a34a, #eab308);
+  color: #333;
+}
+.step-num.s62 {
+  background: linear-gradient(135deg, #eab308, #84cc16);
+  color: #333;
+}
+.step-num.s7 {
+  background: linear-gradient(135deg, #84cc16, #0d9488);
+}
+.step-info{flex:1}
+.step-title{font-size:13px;font-weight:700;color:var(--white);line-height:1.4}
+.step-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+.step-toggle{font-size:16px;color:var(--text-dim);transition:transform .3s;flex-shrink:0}
+.step-card.open .step-toggle{transform:rotate(180deg)}
+.step-body{max-height:0;overflow:hidden;transition:max-height .4s ease;border-top:0 solid var(--border)}
+.step-card.open .step-body{max-height:5000px;border-top-width:1px}
+.step-content{padding:18px}
+
+.code-block{background:#0c0e18;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:var(--teal);overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.code-block .comment{color:var(--text-dim)}
+.code-block .key{color:var(--orange)}
+.code-block .val{color:var(--green)}
+.code-block .hi{color:var(--accent);font-weight:700}
+
+.data-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}
+.data-table thead th{background:#1e2245;color:var(--accent);padding:10px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.data-table tbody td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+.data-table tbody tr:hover td{background:rgba(59,130,246,.04)}
+
+.new-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,.15);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+
+.tip-grid{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.tip-item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.tip-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.tip-text{font-size:12px;color:var(--text);line-height:1.7}
+.tip-text strong{color:var(--white)}
+
+.check-list{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.check-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .2s;user-select:none}
+.check-item:hover{border-color:var(--accent)}
+.check-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:11px;color:transparent}
+.check-item.checked .check-box{background:var(--green);border-color:var(--green);color:#fff}
+.check-label{font-size:12px;color:var(--text);line-height:1.5}
+.check-item.checked .check-label{color:var(--green)}
+
+/* ── FOLDER TREE ── */
+.folder-tree{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2.2;color:var(--text)}
+.folder-tree .f{color:var(--accent);font-weight:700}
+.folder-tree .d{color:var(--green)}
+.folder-tree .indent{padding-left:20px}
+.folder-tree .indent2{padding-left:40px}
+
+/* ── FORMS FIELDS ── */
+.form-preview{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:14px 0}
+.form-header{background:linear-gradient(135deg,#3b1f7e,#5b21b6);padding:14px 18px;color:#fff}
+.form-title{font-size:14px;font-weight:700}
+.form-desc{font-size:10px;color:rgba(255,255,255,.6);margin-top:3px}
+.form-body{padding:16px 18px}
+.form-field{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--white);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.form-label .req{color:var(--red);font-size:13px}
+.form-input{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--text-dim);width:100%}
+.form-select{display:flex;gap:8px;flex-wrap:wrap}
+.form-option{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:10px;color:var(--text)}
+
+.context-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.context-header{background:linear-gradient(135deg,#1e2345,#252a55);padding:16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.context-icon{font-size:24px;flex-shrink:0}
+.context-title{font-size:14px;font-weight:700;color:var(--white);line-height:1.4}
+.context-subtitle{font-size:11px;color:var(--text-dim);margin-top:2px}
+.context-body{padding:18px}
+
+.tag{display:inline-flex;align-items:center;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;margin:1px}
+.tag.n8n{background:rgba(255,159,67,.15);color:var(--orange)}
+.tag.gw{background:rgba(59,130,246,.12);color:var(--accent)}
+.tag.ai{background:rgba(167,139,250,.12);color:var(--purple)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.animate{animation:fadeUp .5s ease both}
+
+@media(max-width:500px){
+  .ba-grid,.output-grid{grid-template-columns:1fr}
+  .hero-week{font-size:44px}
+  .multi-row{flex-direction:column}
+  .multi-source{min-width:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="sf">
+  <span class="lbl">W3</span>
+  <span class="ttl" id="sf-t">대출 서류 접수 자동 폴더 체계 생성</span>
+  <span class="pct" id="sf-p">0%</span>
+</div>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="hero-badge">🏦 ER은행 · Track 1 AX 업무혁신 · Phase 1 마무리</div>
+  <div class="hero-week"><span>W3</span></div>
+  <h1>대출 서류 접수 자동 폴더 체계 생성</h1>
+  <p class="hero-sub">Google Workspace 완전 연동 — 1 트리거 → 4 서비스 동시 출력</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="dot" style="background:var(--purple)"></div>Google Forms</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--accent)"></div>Google Drive</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--blue)"></div>Google Docs</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--green)"></div>Calendar</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--yellow)"></div>Google Mail</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--text-dim)"></div>약 90분</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════ RECAP ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Recap · 지금까지 배운 것</div>
+  <h2>🔄 Phase 1 여정 돌아보기</h2>
+
+  <div class="recap-card">
+    <div class="recap-icon">📈</div>
+    <div class="recap-text">
+      <strong>W1:</strong> 직선 구조 (Trigger → Set → Gmail) — 1개 출력<br>
+      <strong>W2:</strong> 분기 구조 (Trigger → Filter ×3 → Gmail ×3) — 조건별 N개 출력<br>
+      <strong>W3 (오늘):</strong> <strong>멀티 서비스 구조</strong> (Trigger → Drive + Docs + Calendar + Mail) — <strong>4개 서비스 동시 출력</strong>
+    </div>
+  </div>
+
+  <div class="callout teal">
+    <strong>🎯 Phase 1 정리:</strong> W1~W3를 마치면 n8n의 기본 3패턴을 모두 익힌 겁니다. 직선, 조건 분기, 멀티 출력. 이 3가지 조합만으로 대부분의 업무 자동화가 가능합니다!
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 1. 상황 설정 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Context · 왜 이 실습을 하나요?</div>
+  <h2>🏢 상황 설정: 서류가 사라지는 마법</h2>
+
+  <div class="persona">
+    <div class="persona-avatar" style="background:linear-gradient(135deg,var(--accent),var(--purple))">👩‍💻</div>
+    <div>
+      <div class="persona-name">최유진 주임</div>
+      <div class="persona-role">ER은행 여신업무지원팀 · 서류 관리 담당</div>
+      <div class="persona-desc">
+        대출 신청이 들어오면 최유진 주임은 5가지 작업을 합니다: ① Drive에 고객 폴더 만들기 ② 서류 체크리스트 문서 만들기 ③ 심사역 캘린더에 검토 일정 잡기 ④ 팀 채팅방에 알림 보내기 ⑤ 관리 시트에 기록. 한 건당 약 15분. 하루 5건이면 <strong>1시간 15분</strong>이 이 작업에 사라집니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout orange">
+    <strong>😩 최유진 주임의 고민</strong><br>
+    "폴더 이름도 매번 같은 양식인데 직접 타이핑하고, 체크리스트도 템플릿 복사해서 이름 바꾸고, 캘린더 일정도 하나하나 잡고… 가장 짜증나는 건 팀 채팅방에 '신규 건 접수됐습니다'를 매번 복붙하는 거예요."
+  </div>
+
+  <div class="ba-grid">
+    <div class="ba-card before">
+      <div class="ba-label">❌ Before · 수작업 5단계</div>
+      <div class="ba-item">1. Drive에 폴더 수동 생성</div>
+      <div class="ba-item">2. Docs 체크리스트 복사·수정</div>
+      <div class="ba-item">3. Calendar에 검토 일정 등록</div>
+      <div class="ba-item">4. 접수 메일 발송</div>
+      <div class="ba-item">5. Sheets에 접수 현황 기록</div>
+      <div class="ba-item" style="color:var(--red);font-weight:700;margin-top:6px">→ 건당 15분 × 5건 = 75분/일</div>
+    </div>
+    <div class="ba-card after">
+      <div class="ba-label">✅ After · 자동화</div>
+      <div class="ba-item">1. Google Forms에 신청 정보 입력</div>
+      <div class="ba-item">2~5. (전부 자동)</div>
+      <div class="ba-item">&nbsp;</div>
+      <div class="ba-item">&nbsp;</div>
+      <div class="ba-item">&nbsp;</div>
+      <div class="ba-item" style="color:var(--green);font-weight:700;margin-top:6px">→ 건당 2분 (폼 입력만)</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 2. 완성 구조 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Goal · 오늘 만들 워크플로</div>
+  <h2>🎯 1 트리거 → 4 서비스 동시 출력</h2>
+
+  <p>오늘의 핵심은 <strong>"한 번의 입력으로 여러 곳에 동시에 결과를 만든다"</strong>입니다.</p>
+
+  <div class="multi-diagram">
+    <div class="multi-title">📌 Google Forms 제출 → Set (데이터 정리) → 4개 서비스 동시 실행</div>
+    <div class="multi-row">
+      <div class="multi-source">📝 Forms<br>Trigger<br><small style="color:var(--text-dim)">신청서 제출</small></div>
+      <div class="multi-arrow">→</div>
+      <div class="multi-source">⚙️ Set<br><small style="color:var(--text-dim)">폴더명·날짜<br>데이터 정리</small></div>
+      <div class="multi-arrow">→</div>
+      <div class="multi-targets">
+        <div class="multi-target mt-drive">📁 <strong>Google Drive</strong> — "홍길동_20260412" 폴더 자동 생성</div>
+        <div class="multi-target mt-docs">📄 <strong>Google Docs</strong> — 서류 체크리스트 자동 생성 (폴더 안)</div>
+        <div class="multi-target mt-cal">📅 <strong>Google Calendar</strong> — 심사역 검토 일정 D+3 자동 등록</div>
+        <div class="multi-target mt-chat">💬 <strong>Google Mail</strong> — 접수 메일 발송</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 생성 결과 미리보기 -->
+  <h3>📁 자동 생성되는 폴더 구조</h3>
+  <div class="folder-tree">
+    <div><span class="f">📁 여신심사_2026/</span></div>
+    <div class="indent"><span class="f">📁 홍길동_20260412/</span></div>
+    <div class="indent2"><span class="d">📄 서류체크리스트_홍길동.docs</span></div>
+    <div class="indent2"><span style="color:var(--text-dim)">📎 (이후 심사 서류 업로드 공간)</span></div>
+    <div class="indent"><span class="f">📁 이영희_20260413/</span></div>
+    <div class="indent2"><span class="d">📄 서류체크리스트_이영희.docs</span></div>
+    <div class="indent"><span style="color:var(--text-dim)">📁 … (건별 자동 생성)</span></div>
+  </div>
+
+  <div class="callout blue">
+    <strong>💡 핵심 개념: 순차 실행 vs 병렬 실행</strong><br>
+    Drive 폴더를 <strong>먼저</strong> 만들고 → 그 폴더 안에 Docs를 넣어야 하므로 Drive → Docs는 <strong>순차</strong>입니다. 반면 Calendar와 Chat은 폴더와 무관하므로 <strong>병렬</strong>로 실행됩니다.<br><br>
+    <strong>연결 구조:</strong> Set → Drive → Docs (순차) / Set → Calendar (병렬) / Set → Gmail (병렬)
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 3. 사전 준비 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Preparation · 시작 전 준비</div>
+  <h2>📋 사전 준비 (15분)</h2>
+
+  <div class="step-card open" id="prep1">
+    <div class="step-header" onclick="toggle('prep1')">
+      <div class="step-num s1">A</div>
+      <div class="step-info">
+        <div class="step-title">Google Forms 신청서 만들기</div>
+        <div class="step-sub">대출 신청 접수용 폼 생성</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p><a href="https://forms.google.com" style="color:var(--accent)">forms.google.com</a>에서 새 양식을 만들고 제목을 <strong>「대출 신청 접수」</strong>로 지정합니다.</p>
+
+        <div class="form-preview">
+          <div class="form-header">
+            <div class="form-title">📝 대출 신청 접수</div>
+            <div class="form-desc">영업점 접수용 · 작성 후 자동 처리됩니다</div>
+          </div>
+          <div class="form-body">
+            <div class="form-field">
+              <div class="form-label">신청인 성명 <span class="req">*</span></div>
+              <div class="form-input">홍길동</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">신청인 이메일 <span class="req">*</span></div>
+              <div class="form-input">hong@example.com</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">대출 종류 <span class="req">*</span></div>
+              <div class="form-select">
+                <div class="form-option">기업운전자금</div>
+                <div class="form-option">기업시설자금</div>
+                <div class="form-option">개인신용대출</div>
+                <div class="form-option">부동산담보</div>
+              </div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">신청 금액 (만원) <span class="req">*</span></div>
+              <div class="form-input">50000</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">담당 심사역 <span class="req">*</span></div>
+              <div class="form-input">김철수</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">심사역 이메일 <span class="req">*</span></div>
+              <div class="form-input">reviewer@ERbank.com</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>💡 팁1:</strong> "대출 종류"는 <strong>드롭다운</strong>으로 만들면 입력 오류를 방지합니다. 나머지는 <strong>단답형</strong>으로<br/>
+          <strong>💡 팁2:</strong> 응답을 <strong>Sheets에 연결</strong>하여 응답을 관리하고, 신규 응답시  <strong>트리거</strong>될수 있도록<br/>
+          <strong>💡 팁3:</strong> 응답 시트에 <strong>트리거 상태관리</strong>를 위한 컬럼 생성!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="prep2">
+    <div class="step-header" onclick="toggle('prep2')">
+      <div class="step-num s2">B</div>
+      <div class="step-info">
+        <div class="step-title">Drive 상위 폴더 + Credential 준비</div>
+        <div class="step-sub">폴더가 저장될 부모 폴더 생성 + 추가 인증</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p><strong>1.</strong> Google Drive에 <strong>「여신심사_2026」</strong> 폴더를 만듭니다. (고객별 폴더가 이 안에 생깁니다)</p>
+        <p><strong>2.</strong> 폴더를 열고 URL에서 <strong>폴더 ID</strong>를 복사합니다:</p>
+        <div class="code-block"><span class="comment">// URL 예시</span>
+https://drive.google.com/drive/folders/<span class="hi">1aBcDeFgHiJkLmNoPqRsTuVwXyZ</span>
+                                        <span class="comment">↑ 이 부분이 폴더 ID</span></div>
+
+        <p><strong>3.</strong> n8n Credentials에 아래를 추가 등록합니다 (W1에서 안 했다면):</p>
+        <div class="callout">
+          · <strong>Google Drive OAuth2</strong> — 폴더·파일 생성 권한<br>
+          · <strong>Google Docs OAuth2</strong> — 문서 생성 권한<br>
+          · <strong>Google Calendar OAuth2</strong> — 일정 등록 권한<br>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 4. 실습 단계 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Step-by-Step · 모범답안 가이드</div>
+  <h2>🔧 실습: 워크플로 만들기 (60분)</h2>
+
+  <!-- STEP 1: Schedule Trigger -->
+  <div class="step-card" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num s1">1</div>
+      <div class="step-info">
+        <div class="step-title">트리거 — Schedule Trigger</div>
+        <div class="step-sub">⏱ 약 5분 · 🆕 새로운 트리거 유형!</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New Trigger</div>
+        <p>W1~W2는 <strong>Sheets Trigger</strong>를 썼지만, 오늘은 <strong>Schedule Trigger</strong>를 사용합니다. 주기적으로 체크하여 새롭게 추가된 행을 감지합니다.</p>
+
+          <div class="code-block"><span class="comment">// Schedule Trigger 설정</span>
+  <span class="key">Trigger Interval:</span>    <span class="val">Minutes</span>
+  <span class="key">Minutes Between Triggers:</span>     <span class="val">1</span>      
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 22: Get rows -->
+  <div class="step-card" id="s22">
+    <div class="step-header" onclick="toggle('s22')">
+      <div class="step-num s22">2</div>
+      <div class="step-info">
+        <div class="step-title">Google Sheets — Get row(s) in sheet</div>
+        <div class="step-sub">⏱ 약 5분 · 🆕 Google sheet 노드 첫 사용!</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New NODE</div>
+        <p>Schedule Trigger에서 설정한 주기로 구글 시트로부터 값을 조회합니다.</p>
+        <div class="code-block"><span class="comment">// Get row(s) in sheet 설정</span>
+<span class="key">Document:</span>    <span class="val">대출 신청 접수(응답)</span>
+<span class="key">Sheet</span>     <span class="val">설문지 응답 시트1</span>         
+        </div>
+        <div class="callout blue">
+          <strong>💡 상태 필터</strong><br>
+          응답시트에 새롭게 추가된 항목만 작업을 하기 위해서 상태값이 공백인 값만 필터링하여 가져와야합니다.
+        </div>   
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Set -->
+  <div class="step-card" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num s2">3</div>
+      <div class="step-info">
+        <div class="step-title">Set 노드 — 폴더명·접수번호 데이터 정리</div>
+        <div class="step-sub">⏱ 약 10분 · 4개 서비스에서 공통으로 쓸 데이터 가공</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>이 Set 노드의 결과를 4개 서비스가 <strong>공유</strong>합니다. 한 번만 잘 만들면 됩니다.</p>
+
+        <div class="code-block"><span class="comment">// Set 노드 필드 설정</span>
+<span class="key">접수번호:</span>    <span class="val">ER-{{ String($json.row_number-1).padStart(3,'0') }}</span>
+<span class="key">고객명:</span>     <span class="val">{{ $json['신청인 성명'] }}</span>
+<span class="key">이메일:</span>     <span class="val">{{ $json['신청인 이메일'] }}</span>
+<span class="key">대출종류:</span>   <span class="val">{{ $json['대출 종류'] }}</span>
+<span class="key">신청금액:</span>   <span class="val">{{ $json['신청 금액 (만원)'] }}</span>
+<span class="key">심사역:</span>     <span class="val">{{ $json['담당 심사역'] }}</span>
+<span class="key">심사역이메일:</span> <span class="val">{{ $json['심사역 이메일'] }}</span>
+<span class="key">폴더명:</span>     <span class="val">{{ $json['신청인 성명'] }}_{{ $now.format('yyyyMMdd') }}</span>
+<span class="key">검토일:</span>     <span class="val">{{ $now.plus(3, 'days').format('yyyy-MM-dd') }}</span>  <span class="comment">← D+3일</span></div>
+
+        <div class="callout blue">
+          <strong>💡 Forms 필드명 주의!</strong><br>
+          Google Forms의 질문 제목이 그대로 필드명이 됩니다. 공백·괄호 포함! 따라서 <code>$json['신청인 성명']</code>처럼 <strong>대괄호+따옴표</strong>로 감싸야 합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Google Drive -->
+  <div class="step-card" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num s3">4</div>
+      <div class="step-info">
+        <div class="step-title">Google Drive — 고객별 폴더 자동 생성</div>
+        <div class="step-sub">⏱ 약 10분 · 🆕 Drive 노드 첫 사용!</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New Node</div>
+        <p>Set 노드에서 <strong>첫 번째 출력선</strong>으로 Google Drive 노드를 연결합니다.</p>
+
+        <div class="code-block"><span class="comment">// Google Drive 노드 설정</span>
+<span class="key">Credential:</span>    <span class="val">Google Drive OAuth2</span>
+<span class="key">Resource:</span>     <span class="val">Folder</span>           <span class="comment">← "File"이 아님!</span>
+<span class="key">Operation:</span>    <span class="val">Create</span>
+<span class="key">Folder Name:</span>  <span class="val">{{ $json.폴더명 }}</span>  <span class="comment">← 예: "홍길동_20260412"</span>
+<span class="key">Parent Folder:</span> <span class="val">여신심사_2026 폴더 ID</span> <span class="comment">← 준비 단계에서 복사한 ID</span></div>
+
+        <h3>✅ 확인 방법</h3>
+        <p>"Test step" → Output에 <strong>새 폴더의 ID</strong>가 나옵니다. 이 ID가 다음 단계(Docs)에서 필요합니다!</p>
+
+        <div class="callout green">
+          <strong>🔑 중요!</strong> Drive 노드의 Output에 생성된 폴더 ID(<code>id</code> 필드)가 포함됩니다. 다음 Docs 노드에서 이 ID를 참조해 <strong>"이 폴더 안에 문서를 만들어라"</strong>고 지정합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Google Docs -->
+  <div class="step-card" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num s4">5</div>
+      <div class="step-info">
+        <div class="step-title">Google Docs — 서류 체크리스트 Create</div>
+        <div class="step-sub">⏱ 약 10분 · 🆕 Docs 노드 + 이전 노드 참조</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New Node</div>
+        <p><strong>Drive 노드 뒤에</strong> Google Docs 노드를 연결합니다. (Set이 아닌 Drive 뒤!)</p>
+
+        <div class="callout red">
+          <strong>⚠️ 연결 순서가 중요!</strong><br>
+          Set → <strong>Drive → Docs</strong> 순서로 연결해야 합니다. Drive에서 생성된 폴더 ID를 Docs에서 참조해야 하기 때문입니다. 순서가 바뀌면 "폴더가 없는데 문서를 어디에 만들지?" 오류가 납니다.
+        </div>
+
+        <div class="code-block"><span class="comment">// Google Docs Create a document 노드 설정</span>
+<span class="key">Credential:</span>    <span class="val">Google Docs OAuth2</span>
+<span class="key">Operation:</span>    <span class="val">Create</span>
+<span class="key">Title:</span>        <span class="val">서류체크리스트_{{ $('Set').item.json.고객명 }}</span>
+<span class="key">Content:</span>      <span class="val">(아래 참조)</span>
+<span class="key">Parent Folder:</span> <span class="val">{{ $json.id }}</span>  <span class="comment">← Drive 노드 Output의 폴더 ID!</span></div>
+      </div>
+    </div>
+  </div>
+
+
+   <!-- STEP 4: Google Docs -->
+  <div class="step-card" id="s42">
+    <div class="step-header" onclick="toggle('s42')">
+      <div class="step-num s42">6</div>
+      <div class="step-info">
+        <div class="step-title">Google Docs — 서류 체크리스트 Update</div>
+        <div class="step-sub">⏱ 약 10분 · 🆕 Docs 노드 + 이전 노드 참조</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New Node</div>
+        <p><strong>Google Docs Create a document 노드 뒤에</strong> Google Docs Update a document 노드를 연결합니다.</p>
+
+        <h3>📝 체크리스트 본문</h3>
+        <div class="code-block" style="font-size:10px">
+<span class="comment">// Update a document 노드 설정</span>
+<span class="key">Docs ID or URL:</span>    <span class="val">{{ $json.id }}</span>
+
+<span class="comment">// Docs 본문 (Text)</span>
+<span class="hi">📋 여신 심사 서류 체크리스트</span>
+
+접수번호: {{ $('Set').item.json.접수번호 }}
+고객명: {{ $('Set').item.json.고객명 }}
+대출종류: {{ $('Set').item.json.대출종류 }}
+신청금액: {{ $('Set').item.json.신청금액 }}만원
+담당심사역: {{ $('Set').item.json.심사역 }}
+접수일: {{ $now.format('yyyy-MM-dd') }}
+
+━━━━━━━━━━━━━━━━━
+☐ 사업자등록증 사본
+☐ 최근 3개년 재무제표
+☐ 부가세 과세표준증명원
+☐ 국세·지방세 납세증명서
+☐ 등기사항전부증명서
+☐ 담보물 감정평가서 (해당 시)
+☐ 대표자 신분증 사본
+☐ 기타: _______________
+━━━━━━━━━━━━━━━━━
+검토 예정일: {{ $('Set').item.json.검토일 }}
+</div>
+
+        <div class="callout purple">
+          <strong>💡 <code>$('Set')</code> 구문이 뭔가요?</strong><br>
+          Docs 노드는 Drive 노드 뒤에 있으므로, <strong>바로 이전 노드(Drive)</strong>의 Output만 <code>$json</code>으로 접근할 수 있습니다.<br><br>
+          <strong>2단계 전(Set 노드)</strong>의 데이터를 가져오려면 <code>$('Set').item.json.필드명</code>으로 <strong>노드 이름을 지정</strong>해서 참조합니다. n8n에서 "아, 그 노드의 결과를 가져와!" 하는 방법입니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Google Calendar -->
+  <div class="step-card" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num s5">7</div>
+      <div class="step-info">
+        <div class="step-title">Google Calendar — 심사역 검토 일정 자동 등록</div>
+        <div class="step-sub">⏱ 약 10분 · 🆕 Calendar 노드 · Set에서 병렬 연결!</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New Node</div>
+
+        <div class="callout orange">
+          <strong>⚠️ 연결 위치!</strong> Calendar는 <strong>Set 노드의 출력</strong>에서 새로 연결합니다. Drive 뒤가 아닙니다! Set에서 Drive로 가는 선과 <strong>별개로</strong>, Set에서 Calendar로 가는 <strong>두 번째 선</strong>을 만듭니다.
+        </div>
+
+        <div class="code-block">
+<span class="comment">// Google Calendar 노드 설정</span>
+<span class="key">Credential:</span>     <span class="val">Google Calendar OAuth2</span>
+<span class="key">Operation:</span>      <span class="val">Create an Event</span>
+<span class="key">Calendar:</span>       <span class="val">Primary (또는 심사역 캘린더)</span>
+<span class="key">Summary:</span>        <span class="val">[여신심사] {{ $json.고객명 }} - {{ $json.대출종류 }}</span>
+<span class="key">Start:</span>          <span class="val">{{($json['검토일']).toDateTime().set({ hour: 9 }) }}</span>  <span class="comment">← D+3일 오전 9시</span>
+<span class="key">End:</span>            <span class="val">{{($json['검토일']).toDateTime().set({ hour: 10 }) }}</span>  <span class="comment">← 1시간 블록</span>
+<span class="key">Description:</span>    <span class="val">
+접수번호: {{ $json.접수번호 }}
+신청금액: {{ $json.신청금액 }}만원
+서류 폴더 확인 후 심사 의견서 작성
+</span>
+<span class="key">Attendees:</span>      <span class="val">{{ $json.심사역이메일 }}</span>
+</div>
+        <h3>✅ 확인 방법</h3>
+        <p>"Test step" → Google Calendar에 이벤트가 생성되었는지 직접 확인. 심사역 이메일에 캘린더 초대장이 도착합니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6: Google Gmail -->
+  <div class="step-card" id="s6">
+    <div class="step-header" onclick="toggle('s6')">
+      <div class="step-num s6">8</div>
+      <div class="step-info">
+        <div class="step-title">Google Gmail — 접수 메일 발송</div>
+        <div class="step-sub">⏱ 약 5분 · Gmail</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p><strong>1.</strong>마찬가지로 <strong>Set 노드의 출력</strong>에서 <strong>세 번째 선</strong>으로 HTTP Request를 연결합니다.</p>
+        <p><strong>2.</strong> Gmail 노드 설정:</p>
+        <div class="code-block"><span class="comment">// Gmail 노드 설정</span>
+<span class="key">Credential:</span>    <span class="val">Gmail OAuth2</span>
+<span class="key">Operation:</span>    <span class="val">Send (이메일 보내기)</span>
+<span class="key">To:</span>           <span class="val">{{ $json['심사역이메일'] }}</span>  <span class="comment">← 수신할 이메일 주소!</span>
+<span class="key">Subject:</span>      <span class="val">[여신 신규 접수] ER은행 {{ $json.접수번호 }}</span>
+<span class="key">Email Type:</span>   <span class="val">HTML</span>
+<span class="key">Message:</span>      <span class="val">아래 참조</span></div>
+
+        <p><strong>3.</strong> Message (본문)에 아래 HTML을 Expression 모드로 입력:</p>
+        <div class="code-block">&lt;div style="font-family:sans-serif; max-width:560px; margin:0 auto; padding:24px; color:#1a1a2e"&gt;
+  &lt;h2 style="margin:0 0 16px; color:#1a1a2e"&gt;🆕 여신 신규 접수&lt;/h2&gt;
+  &lt;div style="border-top:2px solid #1a1a2e; border-bottom:2px solid #1a1a2e; padding:16px 0; line-height:1.8; font-size:15px"&gt;
+    &lt;p style="margin:0"&gt;📌 &lt;strong&gt;접수번호:&lt;/strong&gt; {{ $json.접수번호 }}&lt;/p&gt;
+    &lt;p style="margin:0"&gt;👤 &lt;strong&gt;고객:&lt;/strong&gt; {{ $json.고객명 }}&lt;/p&gt;
+    &lt;p style="margin:0"&gt;💰 &lt;strong&gt;금액:&lt;/strong&gt; {{ $json.신청금액 }}만원 ({{ $json.대출종류 }})&lt;/p&gt;
+    &lt;p style="margin:0"&gt;👨‍💼 &lt;strong&gt;심사역:&lt;/strong&gt; {{ $json.심사역 }}&lt;/p&gt;
+    &lt;p style="margin:0"&gt;📅 &lt;strong&gt;검토일:&lt;/strong&gt; {{ $json.검토일 }}&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 62: Google Sheet Update -->
+  <div class="step-card" id="s62">
+    <div class="step-header" onclick="toggle('s62')">
+      <div class="step-num s62">9</div>
+      <div class="step-info">
+        <div class="step-title">Google Sheet — Uptate row in sheet</div>
+        <div class="step-sub">⏱ 약 5분 · 🆕 Google Sheet Update</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>마찬가지로 <strong>Set 노드의 출력</strong>에서 <strong>네 번째 선</strong>으로 Update row in sheet를 연결합니다.</p>
+        <div class="code-block"><span class="comment">// Update row in sheet 노드 설정</span>
+<span class="key">Column to match on:</span>    <span class="val">row_number</span>
+<span class="comment">// Values to Update</span>
+<span class="key">row_number (using to match):</span>    <span class="val">{{ $('Get row(s) in sheet').item.json.row_number }}</span>
+<span class="key">상태:</span>    <span class="val">완료</span>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- STEP 7: 전체 테스트 -->
+  <div class="step-card" id="s7">
+    <div class="step-header" onclick="toggle('s7')">
+      <div class="step-num s7">10</div>
+      <div class="step-info">
+        <div class="step-title">전체 테스트 & 활성화</div>
+        <div class="step-sub">⏱ 약 10분 · Forms 제출 → 4곳 동시 확인!</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <h3>📝 테스트 순서</h3>
+        <p><strong>1.</strong> n8n에서 <strong>"Test workflow"</strong> 클릭</p>
+        <p><strong>2.</strong> Google Forms를 열고 테스트 데이터로 <strong>폼 제출</strong></p>
+        <p><strong>3.</strong> 1분 이내에 아래 4곳을 확인:</p>
+
+        <div class="output-grid">
+          <div class="output-card oc-drive">
+            <div class="output-emoji">📁</div>
+            <div class="output-name">Google Drive</div>
+            <div class="output-desc">"여신심사_2026" 폴더 안에<br>"홍길동_20260412" 폴더가 생겼는가?</div>
+          </div>
+          <div class="output-card oc-docs">
+            <div class="output-emoji">📄</div>
+            <div class="output-name">Google Docs</div>
+            <div class="output-desc">폴더 안에 체크리스트 문서가<br>고객 정보와 함께 생성됐는가?</div>
+          </div>
+          <div class="output-card oc-cal">
+            <div class="output-emoji">📅</div>
+            <div class="output-name">Google Calendar</div>
+            <div class="output-desc">D+3일에 심사 일정이<br>등록됐는가?</div>
+          </div>
+          <div class="output-card oc-chat">
+            <div class="output-emoji">💬</div>
+            <div class="output-name">Google Mail</div>
+            <div class="output-desc">팀 채널에 접수 알림<br>메일이 도착했는가?</div>
+          </div>
+        </div>
+
+        <p><strong>4.</strong> 4곳 모두 정상이면 <strong>Active</strong>로 전환!</p>
+
+        <h3>🔧 자주 발생하는 문제</h3>
+        <div class="tip-grid">
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>Docs가 폴더 밖에 생겼어요</strong><br>Docs 노드의 Parent Folder에 <code>{{ $json.id }}</code>가 아니라 직접 폴더 ID를 적은 경우입니다. Drive 노드의 <strong>Output인 id 필드</strong>를 Expression으로 참조해야 합니다.</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>Calendar에 Set 데이터가 안 보여요</strong><br>Calendar 노드가 <strong>Set 노드에 직접 연결</strong>되어 있는지 확인하세요. Drive나 Docs 뒤에 연결하면 Set 데이터가 아닌 Drive/Docs 결과가 넘어옵니다.</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong><code>$('Set').item.json</code>이 에러 나요</strong><br>Set 노드의 이름이 정확히 "Set"인지 확인하세요. 이름을 바꿨다면 바뀐 이름을 써야 합니다. 노드를 더블클릭하면 이름을 확인/변경할 수 있습니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 5. 체크리스트 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Self-Check · 완료 확인</div>
+  <h2>✅ W3 실습 완료 체크리스트</h2>
+
+  <div class="check-list" id="checklist">
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Google Forms "대출 신청 접수" 양식을 만들었다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Drive에 "여신심사_2026" 상위 폴더를 만들고 ID를 복사했다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Set 노드에서 3개의 출력선(Drive·Calendar·Mail)이 나간다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Drive에 "고객명_날짜" 폴더가 자동 생성된다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Docs 체크리스트가 해당 폴더 안에 생성된다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Calendar에 D+3일 심사 일정이 등록된다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Gmail에 접수 알림 메일이 도착한다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">워크플로를 Active로 전환했다</div>
+    </div>
+  </div>
+
+  <div id="completion-msg" style="display:none;text-align:center;margin:20px 0">
+    <div style="font-size:36px;margin-bottom:8px">🎉</div>
+    <div style="font-size:16px;font-weight:900;color:var(--green);margin-bottom:4px">Phase 1 완료! W1~W3 수료!</div>
+    <div style="font-size:12px;color:var(--text-dim)">다음 주부터 AI Agent가 합류합니다</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 6. 핵심 개념 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Key Concepts · 오늘 배운 것</div>
+  <h2>📌 W3 핵심 개념 정리</h2>
+
+  <div class="tip-grid">
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--accent);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">M</div>
+      <div class="tip-text"><strong>멀티 출력 (Fan-out)</strong><br>하나의 노드 출력(●)에서 여러 선을 뻗어 동시에 실행하는 패턴. 오늘은 Set → Drive/Calendar/Gmail 3갈래로 나갔습니다.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--purple);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">$</div>
+      <div class="tip-text"><strong>$('노드명') 참조</strong><br>바로 이전 노드가 아닌, 떨어진 노드의 데이터를 가져오는 방법. <code>$('Set').item.json.고객명</code>처럼 노드 이름을 지정합니다.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--blue);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">→</div>
+      <div class="tip-text"><strong>순차 vs 병렬</strong><br>Drive → Docs는 <strong>순차</strong> (앞 결과가 뒤에 필요). Calendar, Mail <strong>병렬</strong> (서로 독립). 의존 관계를 파악해 연결 순서를 결정합니다.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--orange);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">H</div>
+      <div class="tip-text"><strong>HTTP Request (만능 노드)</strong><br>전용 노드가 없는 서비스와 소통하는 범용 노드. Webhook URL + JSON Body로 거의 모든 서비스에 데이터를 보낼 수 있습니다.</div>
+    </div>
+  </div>
+
+  <div class="callout teal">
+    <strong>🧱 Phase 1 총정리 (W1~W3)</strong><br>
+    <strong>W1:</strong> 직선 (1→1) — Trigger → Set → Gmail<br>
+    <strong>W2:</strong> 조건 분기 (1→N 조건별) — Filter 노드<br>
+    <strong>W3:</strong> 멀티 출력 (1→N 동시) — 순차 + 병렬 연결<br><br>
+    이 3가지가 n8n의 <strong>구조 기본기</strong>입니다. W4부터는 여기에 <strong>Claude AI</strong>가 합류합니다! 🤖
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ W4 미리보기 ═══════ -->
+<section class="animate" style="padding-bottom:40px">
+  <div class="eyebrow">Next Week Preview · Phase 2 시작</div>
+  <h2>👉 W4 미리보기</h2>
+  <div class="context-card">
+    <div class="context-header">
+      <div class="context-icon">🤖</div>
+      <div>
+        <div class="context-title">고객 민원·문의 이메일 AI 자동 분류 라우팅</div>
+        <div class="context-subtitle">n8n AI Agent Node + Claude API — 이메일을 AI가 읽고 분류합니다</div>
+      </div>
+    </div>
+    <div class="context-body">
+      <p>W4부터 <strong>Phase 2</strong>가 시작됩니다. n8n 워크플로 안에 <strong>Claude AI</strong>를 내장해서, 이메일을 AI가 읽고 유형(대출문의/카드분실/이자항의 등)을 자동 분류합니다. "AI가 판단하고, n8n이 실행하는" 구조의 첫 걸음입니다.</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <span class="tag n8n">n8n AI Agent</span>
+        <span class="tag ai">Claude API</span>
+        <span class="tag gw">Gmail</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<div style="background:#0a0c15;color:#555;text-align:center;padding:24px 20px;font-size:10px;line-height:2;margin-bottom:var(--fh);border-top:1px solid var(--border)">
+  ER은행 AX 업무혁신 과정 · Track 1 · W3 실습 가이드 · 2026
+</div>
+
+<script>
+function toggle(id){document.getElementById(id).classList.toggle('open')}
+const sfP=document.getElementById('sf-p');
+const prog=document.getElementById('progress');
+function onScroll(){
+  const sy=window.scrollY;const dh=document.documentElement.scrollHeight-window.innerHeight;
+  const pct=Math.round((sy/Math.max(dh,1))*100);sfP.textContent=pct+'%';prog.style.width=pct+'%';
+}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+function updateProgress(){
+  const items=document.querySelectorAll('#checklist .check-item');
+  const checked=document.querySelectorAll('#checklist .check-item.checked');
+  document.getElementById('completion-msg').style.display=checked.length===items.length?'block':'none';
+}
+</script>
+</body>
+</html>

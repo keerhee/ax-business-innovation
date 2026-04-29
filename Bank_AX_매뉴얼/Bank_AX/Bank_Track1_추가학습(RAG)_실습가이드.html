@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>추가 학습 — Vector RAG 기초 · 여신 규정집 AI 챗봇</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root{
+  --bg:#0d0f1a;--surface:#151829;--card:#1a1e35;--border:#252a45;
+  --text:#c8cce0;--text-dim:#6b7194;--white:#f0f2ff;
+  --accent:#1d4ed8;--accent-glow:rgba(29,78,216,.12);
+  --orange:#ff9f43;--blue:#5b8def;--red:#ef4444;--green:#2ed573;
+  --purple:#a78bfa;--yellow:#ffd43b;--teal:#4ecdc4;--pink:#f472b6;
+  --emerald:#10b981;--amber:#f59e0b;--sky:#38bdf8;
+  --indigo:#6366f1;--cyan:#06b6d4;
+  --fh:46px;--radius:14px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.8;padding-bottom:var(--fh);-webkit-font-smoothing:antialiased}
+
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--cyan));z-index:1000;transition:width .15s;width:0}
+#sf{position:fixed;bottom:0;left:0;right:0;height:var(--fh);background:#0a0c15;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:999}
+#sf .lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)}
+#sf .ttl{font-size:11px;font-weight:700;color:var(--accent);max-width:55%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sf .pct{font-size:10px;color:var(--text-dim)}
+
+.hero{background:linear-gradient(170deg,#0d1030 0%,#111840 40%,#0d1525 100%);padding:56px 20px 48px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;top:-100px;right:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(29,78,216,.12) 0%,transparent 70%)}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(6,182,212,.08) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(29,78,216,.3);border-radius:20px;padding:5px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.hero-week{font-size:56px;font-weight:900;line-height:1;margin-bottom:8px;letter-spacing:-2px}
+.hero-week span{background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero h1{font-size:21px;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.4}
+.hero-sub{font-size:13px;color:var(--text-dim)}
+.hero-meta{display:flex;justify-content:center;gap:14px;margin-top:24px;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim)}
+.hero-meta-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.container{max-width:720px;margin:0 auto;padding:0 16px}
+section{padding:40px 0 0}.divider{height:1px;background:var(--border);margin:40px 0 0}
+.eyebrow{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+h2{font-size:20px;font-weight:900;color:var(--white);margin-bottom:14px;line-height:1.35}
+h3{font-size:14px;font-weight:700;color:var(--white);margin:20px 0 10px}
+p{margin-bottom:10px;font-size:13px;line-height:1.85}
+
+.callout{background:var(--card);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:16px 18px;margin:14px 0;font-size:13px;line-height:1.75}
+.callout.orange{border-left-color:var(--orange);background:rgba(255,159,67,.06)}
+.callout.blue{border-left-color:var(--accent);background:rgba(29,78,216,.06)}
+.callout.green{border-left-color:var(--green);background:rgba(46,213,115,.06)}
+.callout.red{border-left-color:var(--red);background:rgba(239,68,68,.06)}
+.callout.teal{border-left-color:var(--teal);background:rgba(78,205,196,.06)}
+.callout.purple{border-left-color:var(--purple);background:rgba(167,139,250,.08)}
+.callout.cyan{border-left-color:var(--cyan);background:rgba(6,182,212,.06)}
+.callout strong{color:var(--white)}
+
+.persona{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:14px 0}
+.persona-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.persona-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:3px}
+.persona-role{font-size:11px;margin-bottom:6px}
+.persona-desc{font-size:12px;color:var(--text-dim);line-height:1.7}
+
+/* ── RAG PIPELINE VISUAL ── */
+.rag-pipeline{background:var(--card);border:1px solid rgba(29,78,216,.2);border-radius:var(--radius);padding:20px;margin:16px 0}
+.rag-title{font-size:12px;font-weight:700;color:var(--white);margin-bottom:16px;text-align:center}
+.rag-phase{margin-bottom:16px}
+.rag-phase-label{font-size:9px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.rag-phase-label.rp-ingest{color:var(--cyan)}
+.rag-phase-label.rp-query{color:var(--accent)}
+.rag-steps{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rag-step{border-radius:8px;padding:8px 12px;font-size:10px;font-weight:700;text-align:center;line-height:1.3}
+.rs-pdf{background:var(--red);color:#fff}
+.rs-chunk{background:var(--orange);color:#fff}
+.rs-embed{background:var(--indigo);color:#fff}
+.rs-store{background:var(--emerald);color:#fff}
+.rs-question{background:var(--accent);color:#fff}
+.rs-search{background:var(--cyan);color:#fff}
+.rs-GPT{background:var(--purple);color:#fff}
+.rs-answer{background:var(--green);color:#fff}
+.rag-arrow{color:var(--text-dim);font-size:12px}
+.rag-note{font-size:10px;color:var(--text-dim);margin-top:12px;border-top:1px solid var(--border);padding-top:10px;line-height:1.6}
+
+/* ── ANALOGY BOX ── */
+.analogy{background:linear-gradient(135deg,rgba(29,78,216,.06),rgba(6,182,212,.04));border:1px solid rgba(29,78,216,.15);border-radius:var(--radius);padding:20px;margin:16px 0}
+.analogy-title{font-size:14px;font-weight:900;color:var(--accent);margin-bottom:12px}
+.analogy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.analogy-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}
+.analogy-label{font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.analogy-card:first-child .analogy-label{color:var(--amber)}
+.analogy-card:last-child .analogy-label{color:var(--accent)}
+.analogy-text{font-size:11px;color:var(--text);line-height:1.7}
+
+/* ── CHAT PREVIEW ── */
+.chat-preview{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.chat-header{background:var(--card);padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--white);display:flex;align-items:center;gap:8px}
+.chat-msg{padding:10px 16px;display:flex;gap:10px;border-bottom:1px solid rgba(37,42,69,.5)}
+.chat-msg:last-child{border-bottom:none}
+.chat-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.chat-avatar.human{background:var(--accent)}
+.chat-avatar.ai{background:var(--purple)}
+.chat-bubble{flex:1}
+.chat-name{font-size:10px;font-weight:700;margin-bottom:3px}
+.chat-name.cn-human{color:var(--accent)}
+.chat-name.cn-ai{color:var(--purple)}
+.chat-text{font-size:12px;color:var(--text);line-height:1.7}
+.chat-source{background:rgba(29,78,216,.08);border:1px solid rgba(29,78,216,.15);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.6}
+.chat-source strong{color:var(--accent)}
+
+/* ── STEP CARDS ── */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin:14px 0;overflow:hidden;transition:border-color .3s}
+.step-card:hover{border-color:var(--accent)}
+.step-header{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.step-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0}
+.sn-1{background:linear-gradient(135deg,var(--red),#dc2626)}
+.sn-2{background:linear-gradient(135deg,var(--orange),#d97706)}
+.sn-3{background:linear-gradient(135deg,var(--indigo),#4f46e5)}
+.sn-4{background:linear-gradient(135deg,var(--emerald),#059669)}
+.sn-5{background:linear-gradient(135deg,var(--accent),#1e40af)}
+.sn-6{background:linear-gradient(135deg,var(--purple),#7c3aed)}
+.sn-7{background:linear-gradient(135deg,var(--cyan),#0891b2)}
+.step-info{flex:1}
+.step-title{font-size:13px;font-weight:700;color:var(--white);line-height:1.4}
+.step-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+.step-toggle{font-size:16px;color:var(--text-dim);transition:transform .3s;flex-shrink:0}
+.step-card.open .step-toggle{transform:rotate(180deg)}
+.step-body{max-height:0;overflow:hidden;transition:max-height .4s ease;border-top:0 solid var(--border)}
+.step-card.open .step-body{max-height:9000px;border-top-width:1px}
+.step-content{padding:18px}
+
+.code-block{background:#0c0e18;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:var(--teal);overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.code-block .comment{color:var(--text-dim)}.code-block .key{color:var(--orange)}.code-block .val{color:var(--green)}.code-block .hi{color:var(--accent);font-weight:700}.code-block .prompt{color:var(--pink)}
+
+.data-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}
+.data-table thead th{background:#1e2245;color:var(--accent);padding:10px 10px;text-align:left;font-size:10px;font-weight:700;border-bottom:1px solid var(--border)}
+.data-table tbody td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+
+.new-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(29,78,216,.15);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+
+.prompt-block{background:linear-gradient(135deg,#15102a,#1a1535);border:1px solid rgba(167,139,250,.2);border-radius:var(--radius);padding:18px;margin:14px 0}
+.prompt-label{font-size:9px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+.prompt-text{font-size:12px;color:var(--text);line-height:1.85;white-space:pre-wrap}
+.prompt-text .role{color:var(--pink);font-weight:700}
+.prompt-text .rule{color:var(--orange)}
+.prompt-text .example{color:var(--teal)}
+
+.tip-grid{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.tip-item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.tip-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.tip-text{font-size:12px;color:var(--text);line-height:1.7}
+.tip-text strong{color:var(--white)}
+
+.check-list{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.check-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .2s;user-select:none}
+.check-item:hover{border-color:var(--accent)}
+.check-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:11px;color:transparent}
+.check-item.checked .check-box{background:var(--green);border-color:var(--green);color:#fff}
+.check-label{font-size:12px;color:var(--text);line-height:1.5}
+.check-item.checked .check-label{color:var(--green)}
+
+/* ── CHUNK VISUAL ── */
+.chunk-visual{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.chunk-header{background:var(--card);padding:12px 16px;font-size:11px;font-weight:700;color:var(--white);border-bottom:1px solid var(--border)}
+.chunk-body{padding:16px}
+.chunk-doc{background:#0c0e18;border-radius:8px;padding:14px;margin-bottom:12px;font-size:11px;line-height:1.7;color:var(--text-dim);position:relative}
+.chunk-doc::before{content:'📄';position:absolute;left:-8px;top:-8px;font-size:16px}
+.chunk-pieces{display:flex;flex-direction:column;gap:6px}
+.chunk-piece{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:11px;line-height:1.6;color:var(--text);position:relative}
+.chunk-piece::before{content:attr(data-n);position:absolute;right:8px;top:6px;font-size:8px;font-weight:900;color:var(--accent);background:rgba(29,78,216,.1);padding:1px 6px;border-radius:3px}
+.chunk-arrow{text-align:center;color:var(--text-dim);font-size:12px;margin:6px 0}
+
+.context-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.context-header{background:linear-gradient(135deg,#1e2345,#252a55);padding:16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.context-icon{font-size:24px;flex-shrink:0}
+.context-title{font-size:14px;font-weight:700;color:var(--white);line-height:1.4}
+.context-subtitle{font-size:11px;color:var(--text-dim);margin-top:2px}
+.context-body{padding:18px}
+
+.tag{display:inline-flex;align-items:center;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;margin:1px}
+.tag.n8n{background:rgba(255,159,67,.15);color:var(--orange)}
+.tag.ai{background:rgba(167,139,250,.15);color:var(--purple)}
+.tag.db{background:rgba(16,185,129,.12);color:var(--emerald)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.animate{animation:fadeUp .5s ease both}
+@media(max-width:500px){.analogy-grid{grid-template-columns:1fr}.hero-week{font-size:44px}}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="sf">
+  <span class="lbl">W10</span>
+  <span class="ttl" id="sf-t">Vector RAG · 기업 리포트 AI 챗봇</span>
+  <span class="pct" id="sf-p">0%</span>
+</div>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="hero-badge">🧠 추가 학습 · RAG 도입</div>
+  <div class="hero-week"><span>추가 학습</span></div>
+  <h1>Vector RAG 기초 — 여신 규정집 AI 챗봇</h1>
+  <p class="hero-sub">PDF → 청킹 → 임베딩 → Qdrant → GPT 질의응답</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="dot" style="background:var(--red)"></div>PDF 파싱</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--orange)"></div>청킹</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--indigo)"></div>임베딩</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--emerald)"></div>Qdrant</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--purple)"></div>GPT</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--text-dim)"></div>약 90분</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════ RAG 개념 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">What is RAG? · 완전히 새로운 개념</div>
+  <h2>🧠 RAG란 무엇인가?</h2>
+
+  <div class="callout cyan">
+    <strong>RAG = Retrieval-Augmented Generation</strong><br>
+    한국어로 <strong>"찾아서 읽고 답하기"</strong>. AI가 자체 지식만으로 답하는 대신, <strong>내부 문서를 먼저 검색</strong>해서 근거 있는 답변을 생성합니다.
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">💡 도서관 사서에 비유하면?</div>
+    <div class="analogy-grid">
+      <div class="analogy-card">
+        <div class="analogy-label">기존 AI (W4~W6)</div>
+        <div class="analogy-text">
+          사서가 <strong>자기 기억</strong>에 의존해서 답변.<br><br>
+          "여신 한도요? 아마… 5억인 것 같은데요?"<br><br>
+          → 맞을 수도, 틀릴 수도 (<strong>할루시네이션</strong>)
+        </div>
+      </div>
+      <div class="analogy-card">
+        <div class="analogy-label">RAG</div>
+        <div class="analogy-text">
+          사서가 <strong>책장에서 규정집을 꺼내 읽고</strong> 답변.<br><br>
+          "여신취급세칙 제23조 2항에 의거, 개인사업자 신용대출 한도는 <strong>3억원</strong>입니다."<br><br>
+          → <strong>출처 명시</strong>, 정확도 극대화
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAG 파이프라인 시각화 -->
+  <h3>🔧 RAG 파이프라인 2단계</h3>
+  <div class="rag-pipeline">
+    <div class="rag-title">RAG = 색인 단계 (1회) + 질의 단계 (반복)</div>
+
+    <div class="rag-phase">
+      <div class="rag-phase-label rp-ingest">📥 1단계: 색인 (Ingestion) — 문서를 AI가 검색할 수 있게 준비</div>
+      <div class="rag-steps">
+        <div class="rag-step rs-pdf">📄 PDF<br>규정집</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-chunk">✂️ 청킹<br>잘게 나눔</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-embed">🔢 임베딩<br>벡터 변환</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-store">💾 Qdrant<br>벡터 저장</div>
+      </div>
+    </div>
+
+    <div class="rag-phase">
+      <div class="rag-phase-label rp-query">❓ 2단계: 질의 (Query) — 질문하면 답 찾기</div>
+      <div class="rag-steps">
+        <div class="rag-step rs-question">❓ 질문<br>"한도는?"</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-embed">🔢 질문<br>벡터 변환</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-search">🔍 유사도 및 키워드<br>검색</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-GPT">🤖 GPT<br>답변 생성</div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step rs-answer">✅ 답변<br>+출처</div>
+      </div>
+    </div>
+
+    <div class="rag-note">
+      <strong>핵심:</strong> 1단계(색인)는 문서가 바뀔 때만 1번 실행. 2단계(질의)는 질문할 때마다 반복 실행. 오늘은 <strong>두 단계 모두</strong> n8n으로 만듭니다.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 핵심 용어 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Key Terms · 꼭 알아야 할 용어 3개</div>
+  <h2>📖 RAG 핵심 용어 3개</h2>
+
+  <div class="step-card open" id="term1">
+    <div class="step-header" onclick="toggle('term1')">
+      <div class="step-num sn-2">✂️</div>
+      <div class="step-info">
+        <div class="step-title">청킹 (Chunking) — 문서를 잘게 나누기</div>
+        <div class="step-sub">규정집 200페이지를 AI가 다룰 수 있는 크기로 분할</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>규정집 PDF는 수백 페이지입니다. AI에게 전체를 한 번에 보낼 수 없으므로, <strong>의미 단위로 잘게 나눕니다</strong> (보통 500~1000자씩).</p>
+
+        <div class="chunk-visual">
+          <div class="chunk-header">📄 여신취급세칙 → ✂️ 청킹 결과</div>
+          <div class="chunk-body">
+            <div class="chunk-doc">
+              제23조 (개인사업자 신용대출) ① 개인사업자에 대한 신용대출의 최대 한도는 3억원으로 한다. ② 단, 연매출 10억원 이상이고 신용등급 A 이상인 경우 5억원까지 가능하다. ③ 대출 기간은 최대 5년으로 하며, 1년 단위로 연장 심사를 실시한다...
+            </div>
+            <div class="chunk-arrow">✂️ 청킹 (500자 단위)</div>
+            <div class="chunk-pieces">
+              <div class="chunk-piece" data-n="Chunk #1">제23조 (개인사업자 신용대출) ① 개인사업자에 대한 신용대출의 최대 한도는 3억원으로 한다. ② 단, 연매출 10억원 이상이고 신용등급 A 이상인 경우 5억원까지 가능하다.</div>
+              <div class="chunk-piece" data-n="Chunk #2">③ 대출 기간은 최대 5년으로 하며, 1년 단위로 연장 심사를 실시한다. ④ 연장 심사 시 최근 1년간 연체 이력이 있는 경우 한도를 50% 축소한다...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout orange">
+          <strong>비유:</strong> 두꺼운 백과사전을 낱장 카드로 만드는 것과 같습니다. 나중에 필요한 카드만 꺼내서 읽을 수 있게요.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="term2">
+    <div class="step-header" onclick="toggle('term2')">
+      <div class="step-num sn-3">🔢</div>
+      <div class="step-info">
+        <div class="step-title">임베딩 (Embedding) — 텍스트를 숫자로 변환</div>
+        <div class="step-sub">컴퓨터가 "의미 유사도"를 계산할 수 있게 변환</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p><strong>임베딩</strong>은 텍스트를 <strong>숫자 벡터</strong>(긴 숫자 목록)로 바꾸는 것입니다. 비슷한 의미의 텍스트는 비슷한 숫자가 됩니다.</p>
+
+        <div class="code-block"><span class="comment">// 임베딩 예시 (실제로는 1536개의 숫자)</span>
+"<span class="key">대출 한도</span>"   → [0.12, -0.34, 0.78, 0.45, ...]
+"<span class="key">여신 최대금액</span>" → [0.11, -0.33, 0.77, 0.44, ...]  <span class="comment">← 비슷한 숫자!</span>
+"<span class="val">오늘 날씨</span>"   → [-0.89, 0.56, 0.12, -0.67, ...] <span class="comment">← 완전 다른 숫자</span></div>
+
+        <div class="callout blue">
+          <strong>비유:</strong> GPS 좌표처럼, 의미가 비슷한 텍스트는 <strong>"의미 공간"</strong>에서 가까운 위치에 놓입니다. "대출 한도"와 "여신 최대금액"은 거의 같은 위치, "오늘 날씨"는 완전히 먼 위치에 있습니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="term3">
+    <div class="step-header" onclick="toggle('term3')">
+      <div class="step-num sn-4">🔍</div>
+      <div class="step-info">
+        <div class="step-title">벡터 검색 (Vector Search) — 의미로 찾기</div>
+        <div class="step-sub">키워드가 아닌 "의미 유사도"로 관련 문서 찾기</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>질문도 임베딩 → 저장된 청크 벡터와 <strong>거리 비교</strong> → 가장 가까운(의미가 비슷한) 청크를 찾아옵니다.</p>
+
+        <div class="callout green">
+          <strong>키워드 검색 vs 벡터 검색</strong><br>
+          <strong>키워드:</strong> "대출 한도" 검색 → "대출"과 "한도"라는 <strong>단어가 있는</strong> 문서만 찾음<br>
+          <strong>벡터:</strong> "대출 한도" 검색 → <strong>"여신 최대 금액"</strong>이라고 적힌 문서도 찾음! (같은 의미니까)<br><br>
+          이것이 RAG가 강력한 이유입니다. 규정에 "대출 한도"가 아니라 "여신 한도"로 적혀 있어도 찾아냅니다.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 상황 설정 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Context</div>
+  <h2>🏢 상황 설정: 규정 검색에 30분</h2>
+
+  <div class="persona">
+    <div class="persona-avatar" style="background:linear-gradient(135deg,var(--accent),var(--cyan))">📚</div>
+    <div>
+      <div class="persona-name">오하늘 심사역</div>
+      <div class="persona-role" style="color:var(--accent)">ER은행 여신심사팀 · 4년차</div>
+      <div class="persona-desc">
+        "담보 인정 비율이 몇 %였더라?" — 규정집 PDF를 열고 목차를 보고, Ctrl+F로 검색하고, 여러 조항을 비교해서 답을 찾습니다. 한 건당 10~30분. 하루에 이런 질문이 5번이면 <strong>2시간 이상</strong>이 규정 검색에 소모됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 완성 시 대화 미리보기 -->
+  <h3>🎯 완성하면 이렇게 동작합니다</h3>
+  <div class="chat-preview">
+    <div class="chat-header">🤖 ER은행 규정 챗봇</div>
+    <div class="chat-msg">
+      <div class="chat-avatar human">Q</div>
+      <div class="chat-bubble">
+        <div class="chat-name cn-human">오하늘 심사역</div>
+        <div class="chat-text">개인사업자 신용대출 최대 한도는 얼마인가요?</div>
+      </div>
+    </div>
+    <div class="chat-msg">
+      <div class="chat-avatar ai">A</div>
+      <div class="chat-bubble">
+        <div class="chat-name cn-ai">규정 챗봇 (GPT + RAG)</div>
+        <div class="chat-text">개인사업자 신용대출의 최대 한도는 <strong>3억원</strong>입니다. 다만, 연매출 10억원 이상이고 신용등급 A 이상인 경우 <strong>5억원</strong>까지 가능합니다.</div>
+        <div class="chat-source">
+          <strong>📌 출처:</strong> 여신취급세칙 제23조 제1항, 제2항 (p.47)
+        </div>
+      </div>
+    </div>
+    <div class="chat-msg">
+      <div class="chat-avatar human">Q</div>
+      <div class="chat-bubble">
+        <div class="chat-name cn-human">오하늘 심사역</div>
+        <div class="chat-text">담보 인정 비율 LTV는 몇 %야?</div>
+      </div>
+    </div>
+    <div class="chat-msg">
+      <div class="chat-avatar ai">A</div>
+      <div class="chat-bubble">
+        <div class="chat-name cn-ai">규정 챗봇 (GPT + RAG)</div>
+        <div class="chat-text">부동산 담보 인정 비율(LTV)은 아파트 <strong>70%</strong>, 일반 주택 <strong>60%</strong>, 상업용 부동산 <strong>50%</strong>입니다.</div>
+        <div class="chat-source">
+          <strong>📌 출처:</strong> 여신취급세칙 제31조 제3항 [별표 2] (p.62)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 실습 단계 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Step-by-Step · 모범답안 가이드</div>
+  <h2>🔧 실습 (80분)</h2>
+
+  <div class="callout blue">
+    <strong>📌 오늘의 실습은 2개의 워크플로를 만듭니다</strong><br>
+    <strong>워크플로 ①:</strong> 색인 파이프라인 (PDF → 청킹 → 임베딩 → Qdrant) — 규정집 업로드 시 실행<br>
+    <strong>워크플로 ②:</strong> 질의 파이프라인 (질문 → 벡터 검색 → GPT 답변) — 반복 사용
+  </div>
+
+  <!-- Step 1: Qdrant 준비 -->
+  <div class="step-card" id="s1">
+    <div class="step-header" onclick="toggle('s1')">
+      <div class="step-num sn-4">1</div>
+      <div class="step-info">
+        <div class="step-title">🆕 Qdrant 준비 — 벡터 DB 설정</div>
+        <div class="step-sub">⏱ 약 15분 · 무료 계정 생성 + 벡터 테이블 만들기</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 New Tool</div>
+        <h3>Qdrant란?</h3>
+        <p>Qdrant는 <strong>무료로 시작할 수 있는 벡터 데이터베이스</strong>입니다. 여기에 규정집 청크를 벡터(숫자)로 저장하면, 나중에 질문과 유사한 청크를 빠르게 찾을 수 있습니다.</p>
+
+        <p><strong>1.</strong> <a href="https://Qdrant.com" style="color:var(--accent)">Qdrant.com</a> → 무료 계정 생성</p>
+        <p><strong>2.</strong> <strong>API Key</strong>와 <strong>Cluster Endpoint</strong>를 복사</p>
+        <p><strong>3.</strong> "Create a Free Cluster": <code style="color:var(--accent)">ERBank</code></p>
+        <p><strong>4.</strong> "Create Collection": <code style="color:var(--accent)">Company-Report</code></p>
+        <p><strong>5.</strong> n8n Credentials에 <strong>"Qdrant"</strong> 등록</p>
+
+        <div class="callout orange">
+          <strong>⚠️ vector(1536)이 뭔가요?</strong><br>
+          OpenAI의 임베딩 모델(text-embedding-3-small)이 텍스트를 <strong>1536개의 숫자</strong>로 변환합니다. 그 숫자들을 저장하는 공간입니다. 숫자 자체는 몰라도 됩니다 — n8n이 자동으로 처리합니다!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: PDF 파싱 + 청킹 -->
+  <div class="step-card" id="s2">
+    <div class="step-header" onclick="toggle('s2')">
+      <div class="step-num sn-1">2</div>
+      <div class="step-info">
+        <div class="step-title">워크플로 ① — PDF 파싱 + 청킹</div>
+        <div class="step-sub">⏱ 약 15분 · 규정 PDF를 텍스트로 추출하고 잘게 나누기</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <h3>📝 워크플로 구성</h3>
+        <div class="code-block"><span class="comment">// 워크플로 ① 색인 파이프라인</span>
+<span class="hi">① GoogleDrive Trigger - On changes involving a specific folder</span>  <span class="comment">← 폴더에 파일이 추가되면 자동 감지</span>
+<span class="hi">② GoogleDrive - Download file</span> <span class="comment">← 추가된 파일 다운로드</span>
+<span class="hi">③ Extract From File</span> <span class="comment">← PDF 내용을 텍스트로 추출</span>
+<span class="hi">④ Code (청킹)</span>  <span class="comment">← 텍스트를 500자 청크로 분할</span>
+<span class="hi">⑤ Qdrant (Insert)</span> <span class="comment">← 벡터 DB에 저장</span></div>
+
+        <h3>Code 노드 — 청킹 로직</h3>
+        <div class="code-block"><span class="comment">// Code 노드 — 텍스트를 500자 청크로 분할</span>
+const text = $input.first().json.text; // PDF에서 추출된 텍스트
+
+const chunkSize = 1000; // 글자 수 기준 (조절 가능)
+const overlap = 200; // 겹침 (문맥 유지용)
+
+let chunks = [];
+
+for (let i = 0; i < text.length; i += (chunkSize - overlap)) {
+  chunks.push({
+    chunk: text.slice(i, i + chunkSize)
+  });
+}
+
+return chunks.map(c => ({ json: c }));</div>
+
+        <div class="callout purple">
+          <strong>💡 overlap(겹침)이 왜 필요한가요?</strong><br>
+          "제23조 ② 단, 연매출 10억원 이상이고"에서 잘리면 뒷내용이 사라집니다. 200자를 겹쳐서 자르면 앞 청크의 마지막 200자가 다음 청크의 시작 50자와 <strong>겹칩니다</strong>. 이렇게 하면 문장이 중간에 끊기는 것을 방지합니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: 임베딩 + Qdrant 저장 -->
+  <div class="step-card" id="s3">
+    <div class="step-header" onclick="toggle('s3')">
+      <div class="step-num sn-3">3</div>
+      <div class="step-info">
+        <div class="step-title">임베딩 생성 + Qdrant 저장</div>
+        <div class="step-sub">⏱ 약 15분 · 🆕 Embedding + 벡터 DB 쓰기</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕 Embedding</div>
+
+        <h3>Qdrant 노드 — 임베딩 생성</h3>
+        <div class="code-block"><span class="comment">// Qdrant - Upsert Points 노드 설정</span>
+<span class="key">Credential:</span>      <span class="val">Qdrant API Key</span>
+<span class="key">Resource:</span>        <span class="val">point</span>
+<span class="key">Operation:</span>       <span class="val">Upsert Points</span>
+<span class="key">Collection Name:</span> <span class="val">regulations</span>
+<span class="key">Points:</span>       
+<span class="val">{{
+  [
+    {
+      id: $itemIndex, 
+      payload: { 
+        text: $json.chunk 
+      },
+      vector: {
+        dense: { <span class="comment">// 유사도 벡터</span>
+          text: $json.chunk,
+          model: "sentence-transformers/all-minilm-l6-v2"
+        },
+        sparse: { <span class="comment">// 키워드 벡터</span>
+          text: $json.chunk,
+          model: "qdrant/bm25"
+        }
+      }
+    }
+  ].toJsonString()
+}}</span>
+<span class="key">Wait:</span>            <span class="val">true</span>
+<span class="key">Ordering:</span>        <span class="val">Weak</span>
+</div>
+
+        <h3>✅ 임베딩 완료 확인</h3>
+        <p>Qdrant → Collection regulations에 <strong>청크 수만큼 행</strong>이 들어가 있으면 성공!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: 질의 파이프라인 -->
+  <div class="step-card" id="s4">
+    <div class="step-header" onclick="toggle('s4')">
+      <div class="step-num sn-5">4</div>
+      <div class="step-info">
+        <div class="step-title">워크플로 ② — 질의 파이프라인 (질문 → 검색 → 답변)</div>
+        <div class="step-sub">⏱ 약 25분 · 핵심! 벡터 검색 + GPT 답변 생성</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <div class="new-tag">🆕🆕🆕 Core</div>
+        <div class="code-block"><span class="comment">// 워크플로 ② 질의 파이프라인 구조</span>
+<span class="hi">① Chat Trigger</span>  <span class="comment">← 질문을 N8N의 Chat으로 수신</span>
+<span class="hi">② Qdrant - Query Points</span>  <span class="comment">← 질문을 벡터로 변환 및 벡터 스토어 검색</span>
+<span class="hi">③ GPT AI Agent</span>  <span class="comment">← 청크 기반 답변 생성</span>
+<span class="hi">④ Chat Send Message</span> <span class="comment">← 답변 반환</span></div>
+        <h3>Chat Triiger 질문 수신</h3>
+        <div class="code-block"><span class="comment">// Chat Trigger Options</span>
+<span class="key">response Mode:</span>   <span class="val">Using Response Nodes</span>
+</div>
+        <h3>n8n에서 Qdrant 검색 호출</h3>
+        <div class="code-block"><span class="comment">// Qdrant 노드 - Query Points</span>
+<span class="key">Credential:</span>        <span class="val">Qdrant API Key</span>
+<span class="key">Resource:</span>          <span class="val">Search</span>
+<span class="key">Operation:</span>         <span class="val">Query Points</span>
+<span class="key">Collection Name:</span>   <span class="val">regulations</span>
+<span class="key">Query:</span> 
+<span class="val">{
+  "fusion": "rrf"<span class="comment">// rrf : dense 및 sparse 벡터스토어로 부터 검색된 결과를 합침</span>
+}</span>
+<span class="key">Score Threshold:</span>   <span class="val">0</span><span class="comment">// 유사도 최소 점수</span>
+<span class="key">Limit:</span>             <span class="val">5</span><span class="comment">// 반환 갯수</span>
+<span class="key">Offset:</span>            <span class="val">0</span>
+<span class="key">With Vector:</span>       <span class="val">false</span>
+<span class="key">With Payload:</span>      <span class="val">true</span>
+<span class="key">Using:</span>             <span class="val"></span>
+<span class="key">Filter:</span>            <span class="val">null</span>
+<span class="key">Prefetch:</span>
+<span class="val">[
+  {
+    "query": {
+      "text": "{{ $json.chatInput }}",
+      "model": "sentence-transformers/all-minilm-l6-v2"
+    },
+    "using": "dense",
+    "limit": 10
+  },
+  {
+    "query": {
+      "text": "{{ $json.chatInput }}",
+      "model": "qdrant/bm25"
+    },
+    "using": "sparse",
+    "limit": 10
+  }
+]
+<span class="key">Params:</span>           <span class="val">null</span>
+<span class="key">Lookup From:</span>      <span class="val">null</span>
+<span class="key">Consistency:</span>      <span class="val">Majority</span>
+<span class="key">Timeout:</span>          <span class="val">100</span>
+<span class="key">Shard Key:</span>        <span class="val">null</span>
+
+</div>
+        <h3>GPT AI — 출처 기반 답변 생성</h3>
+        <div class="prompt-block">
+          <div class="prompt-label">📋 System Prompt</div>
+          <div class="prompt-text"><span class="role">당신은 ER은행 여신 규정 전문 상담사입니다.</span>
+
+"참고 문서"로 전달한  【검색된 규정 원문】을 근거로 질문에 답변하세요.
+
+<span class="rule">【규칙】
+- 반드시 검색된 원문에 있는 내용만으로 답변하세요
+- "참고문서"로 답변할수 없는 질문은 "해당 내용은 검색된 규정에서 찾을 수 없습니다"라고 답하세요
+- 답변 끝에 반드시 출처(조항 번호)를 명시하세요</span>
+
+<span class="rule">【응답 형식 — JSON】</span>
+<span class="example">{
+  "답변": "개인사업자 신용대출 최대 한도는 3억원입니다.",
+  "출처": "여신취급세칙 제23조 제1항"
+}</span></div>
+        </div>
+
+        <div class="code-block"><span class="comment">// User Message</span>
+<span class="prompt">{
+  "질문": {{ $('When chat message received').item.json.chatInput }}
+  "참고문서": {{ JSON.stringify($json.result.points.map(item => item.payload.text.replaceAll("\n","").trim())) }}
+}</span></div>
+    <h3>Chat Send Message</h3>
+    <div class="code-block"><span class="comment">// Chat Send Message</span>
+<span class="key">Operation:</span>   <span class="val">Send Message</span>
+<span class="key">Message:</span>     <span class="val">{{ $json.output }}</span>
+</div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Step 5: 테스트 -->
+  <div class="step-card" id="s5">
+    <div class="step-header" onclick="toggle('s5')">
+      <div class="step-num sn-7">5</div>
+      <div class="step-info">
+        <div class="step-title">테스트 — 실제 질문으로 검증!</div>
+        <div class="step-sub">⏱ 약 10분 · 3가지 질문으로 RAG 성능 확인</div>
+      </div>
+      <div class="step-toggle">▼</div>
+    </div>
+    <div class="step-body">
+      <div class="step-content">
+        <p>Chat으로 아래 질문을 보냅니다:</p>
+
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>테스트 질문</th><th>기대 답변 핵심</th><th>기대 출처</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent)">"운전자금 여신에서 우선 취급해야 하는 자금은?"</td><td>상업어음할인 등 단기간 내 상환 자금</td><td>제4조 제1항</td></tr>
+            <tr><td style="color:var(--accent)">"주채무계열 소속 기업체 대출은 중소기업 대출비율 산정에 포함되나요?"</td><td>포함되지 않음</td><td>제7조 제2항 제1호</td></tr>
+            <tr><td style="color:var(--accent)">"중소기업대출비율 준수 여부는 얼마나 자주 점검하나요?"</td><td>1개월마다</td><td>제7조의2 제1항</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>🔧 자주 발생하는 문제</h3>
+        <div class="tip-grid">
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>검색 결과가 0건이에요</strong><br>임베딩 워크플로가 정상 실행됐는지, Qdrant regulations collection에 데이터가 있는지 확인. embedding 칼럼이 null이면 OpenAI 임베딩이 실패한 것.</div>
+          </div>
+          <div class="tip-item">
+            <div class="tip-icon">❓</div>
+            <div class="tip-text"><strong>GPT가 리포트에 없는 내용을 지어내요</strong><br>System Prompt에 <strong>"원문에 없는 내용은 답하지 마세요"</strong>가 빠졌는지 확인.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 체크리스트 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Self-Check · 완료 확인</div>
+  <h2>✅ W10 실습 완료 체크리스트</h2>
+
+  <div class="check-list" id="checklist">
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Qdrant에 regulations collection을 생성했다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">입베딩 파이프라인이 PDF → 청킹 → 임베딩 → Qdrant 저장을 완료했다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">Qdrant regulations 테이블에 청크 데이터가 저장되어 있다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">질문을 보내면 관련 청크 Top-5가 검색된다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">GPT가 검색된 청크를 근거로 답변하고 출처를 명시한다</div>
+    </div>
+    <div class="check-item" onclick="this.classList.toggle('checked');updateProgress()">
+      <div class="check-box">✓</div>
+      <div class="check-label">3가지 테스트 질문에 대해 정확한 조항을 인용한 답변이 나온다</div>
+    </div>
+  </div>
+
+  <div id="completion-msg" style="display:none;text-align:center;margin:20px 0">
+    <div style="font-size:36px;margin-bottom:8px">🧠</div>
+    <div style="font-size:16px;font-weight:900;color:var(--green);margin-bottom:4px">W10 실습 완료! Vector RAG 첫 구현 성공!</div>
+    <div style="font-size:12px;color:var(--text-dim)">오하늘 심사역의 규정 검색: 30분 → 30초</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ 핵심 개념 ═══════ -->
+<section class="animate">
+  <div class="eyebrow">Key Concepts</div>
+  <h2>📌 핵심 개념 정리</h2>
+
+  <div class="tip-grid">
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--accent);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">R</div>
+      <div class="tip-text"><strong>RAG (Retrieval-Augmented Generation)</strong><br>AI가 자체 지식 대신 <strong>내부 문서를 검색해서 근거 있는 답변</strong>을 생성. 할루시네이션 방지 + 출처 명시가 핵심 장점.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--orange);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">✂️</div>
+      <div class="tip-text"><strong>청킹 (Chunking)</strong><br>긴 문서를 500~1000자 단위로 분할. 조항 단위가 이상적. overlap(겹침)으로 문장 단절 방지.</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--indigo);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🔢</div>
+      <div class="tip-text"><strong>임베딩 (Embedding)</strong><br>텍스트를 숫자 벡터로 변환. 의미가 유사한 텍스트는 유사한 벡터. "대출 한도" ≈ "여신 최대금액".</div>
+    </div>
+    <div class="tip-item">
+      <div class="tip-icon" style="font-size:14px;background:var(--emerald);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🔍</div>
+      <div class="tip-text"><strong>하이브리드 검색 (Hybrid Search)</strong><br><strong>키워드 및 의미 유사도</strong>로 검색. Qdrant가 질문과 가장 유사한 청크를 찾음.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+</div>
+
+<div style="background:#0a0c15;color:#555;text-align:center;padding:24px 20px;font-size:10px;line-height:2;margin-bottom:var(--fh);border-top:1px solid var(--border)">
+  ER은행 AX 업무혁신 과정 · Track 1 · 추가 학습(RAG) 실습 가이드 · 2026
+</div>
+
+<script>
+function toggle(id){document.getElementById(id).classList.toggle('open')}
+const sfP=document.getElementById('sf-p');const prog=document.getElementById('progress');
+function onScroll(){const sy=window.scrollY;const dh=document.documentElement.scrollHeight-window.innerHeight;const pct=Math.round((sy/Math.max(dh,1))*100);sfP.textContent=pct+'%';prog.style.width=pct+'%'}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+function updateProgress(){const items=document.querySelectorAll('#checklist .check-item');const checked=document.querySelectorAll('#checklist .check-item.checked');document.getElementById('completion-msg').style.display=checked.length===items.length?'block':'none'}
+</script>
+</body>
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ER은행 2026 — Track 1: AX 업무혁신 과정</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+:root{
+  --black:#0d0d0d;--gray:#6b6b6b;--light:#f3f3f3;--border:#e6e6e6;--white:#fff;
+  --fh:46px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:#fff;color:var(--black);font-size:14px;line-height:1.75;padding-bottom:var(--fh)}
+
+/* ── STICKY FOOTER ── */
+#sf{position:fixed;bottom:0;left:0;right:0;height:var(--fh);background:var(--black);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:999}
+#sf .lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#555}
+#sf .ttl{font-size:12px;font-weight:700;color:#fff;max-width:60%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sf .pct{font-size:10px;color:#555;white-space:nowrap}
+
+/* ── HERO ── */
+.hero{background:var(--black);color:#fff;padding:52px 20px 44px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;border:1px solid rgba(255,255,255,.05);border-radius:50%}
+.hero-badge{display:inline-block;border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:4px 14px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-bottom:18px}
+.hero h1{font-size:24px;font-weight:900;line-height:1.35;margin-bottom:10px;letter-spacing:-.5px}
+.hero-sub{font-size:12px;color:#777;margin-bottom:28px}
+.hero-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin-top:24px}
+.hero-kpi-item{background:rgba(255,255,255,.04);padding:13px 5px;text-align:center}
+.hero-kpi-num{font-size:17px;font-weight:900;color:#fff;display:block}
+.hero-kpi-lbl{font-size:9px;color:#555;margin-top:2px;line-height:1.3}
+
+/* ── LAYOUT ── */
+.container{max-width:700px;margin:0 auto;padding:0 15px}
+section{padding:38px 0 0}
+.divider{height:1px;background:var(--border);margin:36px 0 0}
+.eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:5px}
+h2{font-size:19px;font-weight:900;letter-spacing:-.3px;margin-bottom:14px;line-height:1.3}
+h3{font-size:13px;font-weight:700;margin:18px 0 8px}
+p{color:#333;margin-bottom:8px;font-size:13px}
+.callout{background:var(--light);border-left:3px solid var(--black);padding:13px 15px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px;line-height:1.65}
+.callout.orange{background:#fff8ed;border-left-color:#d97706}
+.callout.blue{background:#eff6ff;border-left-color:#1d4ed8}
+.callout.green{background:#f0fdf4;border-left-color:#15803d}
+.callout.purple{background:#faf5ff;border-left-color:#7c3aed}
+
+/* ── TOOL TAG ── */
+.tt{display:inline-flex;align-items:center;background:rgba(0,0,0,.07);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;color:#222;margin:1px}
+.tt.black{background:var(--black);color:#fff}
+.tt.blue{background:#1d4ed8;color:#fff}
+.tt.green{background:#15803d;color:#fff}
+.tt.purple{background:#7c3aed;color:#fff}
+.tt.orange{background:#c2410c;color:#fff}
+.tt.teal{background:#0f766e;color:#fff}
+
+/* ── PHASE BANNER ── */
+.phase-banner{background:var(--black);color:#fff;border-radius:10px;padding:14px 16px;margin:20px 0 4px;display:flex;align-items:center;gap:12px}
+.phase-num{font-size:9px;font-weight:900;letter-spacing:1.5px;background:rgba(255,255,255,.1);padding:3px 9px;border-radius:4px;white-space:nowrap}
+.phase-info{flex:1}
+.phase-title{font-size:14px;font-weight:700;line-height:1.3}
+.phase-sub{font-size:10px;color:#666;margin-top:2px}
+.phase-wks{font-size:10px;color:#555;white-space:nowrap}
+
+/* ── WEEKLY TABLE ── */
+.week-table{width:100%;margin:4px 0 0;border-collapse:collapse}
+.week-table thead th{background:#222;color:#fff;font-size:10px;font-weight:700;padding:7px 10px;text-align:left;letter-spacing:.5px}
+.week-table thead th:first-child{width:36px;text-align:center}
+.week-table tbody tr{border-bottom:1px solid var(--border)}
+.week-table tbody tr:nth-child(even){background:#fafafa}
+.week-table tbody tr:nth-child(odd){background:#fff}
+.week-table td{padding:10px 10px;vertical-align:top;font-size:12px}
+.week-table td:first-child{font-weight:900;font-size:11px;color:#aaa;text-align:center;white-space:nowrap;width:36px}
+.week-title{font-weight:700;font-size:12px;color:var(--black);margin-bottom:4px;line-height:1.4}
+.week-detail{font-size:11px;color:#444;line-height:1.6;margin-bottom:5px}
+.week-tools{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+
+/* ── N8N FLOW ── */
+.n8n-flow{background:#fffbeb;border:1px solid #fcd34d;border-radius:11px;padding:14px;margin:14px 0}
+.n8n-title{font-size:11px;font-weight:700;color:#92400e;margin-bottom:10px}
+.n8n-steps{display:flex;flex-direction:column;gap:4px}
+.n8n-step{display:flex;align-items:flex-start;gap:8px;padding:4px 0}
+.n8n-node{border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.nn-t{background:#dc2626;color:#fff}   /* trigger */
+.nn-a{background:#2563eb;color:#fff}   /* action */
+.nn-ai{background:#7c3aed;color:#fff}  /* ai */
+.nn-o{background:#059669;color:#fff}   /* output */
+.nn-c{background:#374151;color:#fff}   /* code/logic */
+.n8n-edge{font-size:10px;color:#bbb;padding-top:5px;flex-shrink:0}
+.n8n-desc{font-size:11px;color:#78350f;flex:1;line-height:1.6;padding-top:3px}
+
+/* ── CONCEPT BOX ── */
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.concept-card{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.concept-head{background:var(--black);color:#fff;padding:9px 12px;font-size:11px;font-weight:700}
+.concept-body{padding:10px 12px;background:var(--light);font-size:11px;color:#444;line-height:1.6}
+
+/* ── SKILL CARD ── */
+.skill-list{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+.skill-item{display:flex;gap:11px;align-items:flex-start;background:var(--light);border-radius:9px;padding:11px 13px;border:1px solid var(--border)}
+.skill-icon{font-size:17px;flex-shrink:0;margin-top:1px}
+.skill-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.skill-desc{font-size:11px;color:var(--gray);line-height:1.55}
+
+/* ── RAG FLOW ── */
+.rag-block{background:var(--light);border-radius:12px;padding:15px;margin:12px 0;border:1px solid var(--border)}
+.rag-title{font-size:12px;font-weight:700;margin-bottom:10px}
+.rag-row{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+.rag-box{background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:600;flex:1;min-width:80px;text-align:center;line-height:1.4}
+.rag-box.b-dark{background:var(--black);color:#fff;border-color:var(--black)}
+.rag-box.b-blue{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.rag-box.b-orange{background:#d97706;color:#fff;border-color:#d97706}
+.rag-box.b-purple{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.rag-box.b-green{background:#059669;color:#fff;border-color:#059669}
+.rag-arrow{color:#bbb;font-size:13px;flex-shrink:0}
+.rag-note{font-size:11px;color:var(--gray);margin-top:8px;line-height:1.5;border-top:1px solid var(--border);padding-top:8px}
+
+/* ── OPAL CARD ── */
+.opal-card{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px}
+.opal-head{background:var(--black);color:#fff;padding:10px 15px;display:flex;align-items:center;gap:9px}
+.opal-num{font-size:10px;font-weight:900;color:#666;border:1px solid #333;padding:2px 7px;border-radius:3px}
+.opal-ttl{font-size:13px;font-weight:700}
+.opal-body{padding:12px 15px;background:var(--light)}
+.opal-flow{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.of-step{background:#fff;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:600}
+.of-arrow{color:#ccc;font-size:11px}
+.opal-items{list-style:none}
+.opal-items li{font-size:12px;color:#333;padding:3px 0 3px 14px;position:relative;border-bottom:1px solid var(--border);line-height:1.6}
+.opal-items li:last-child{border-bottom:none}
+.opal-items li::before{content:'→';position:absolute;left:0;color:#bbb;font-size:10px;top:6px}
+
+/* ── CMP TABLE ── */
+.cmp-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}
+.cmp-table th{background:var(--black);color:#fff;padding:8px 10px;text-align:left;font-size:10px;font-weight:700}
+.cmp-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+.cmp-table tr:nth-child(even) td{background:var(--light)}
+.badge-g{background:#d1fae5;color:#065f46;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700}
+.badge-r{background:#fee2e2;color:#991b1b;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700}
+
+/* ── OUT CARD ── */
+.out-card{display:flex;gap:11px;border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:8px}
+.out-num{font-size:20px;font-weight:900;color:#ddd;line-height:1;flex-shrink:0;width:26px}
+.out-ttl{font-size:13px;font-weight:700;margin-bottom:3px}
+.out-desc{font-size:11px;color:var(--gray);line-height:1.55}
+
+/* ── KPI ── */
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:13px 0}
+.kpi-card{background:var(--black);border-radius:11px;padding:16px 8px;text-align:center}
+.kpi-num{font-size:24px;font-weight:900;color:#fff;line-height:1}
+.kpi-lbl{font-size:10px;color:#555;margin-top:5px;line-height:1.4}
+
+@media(max-width:400px){
+  .concept-grid{grid-template-columns:1fr}
+  .kpi{grid-template-columns:1fr}
+  .hero h1{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<div id="sf">
+  <span class="lbl">섹션</span>
+  <span class="ttl" id="sf-t">Track 1: AX 업무혁신 과정</span>
+  <span class="pct" id="sf-p">0%</span>
+</div>
+
+<!-- ════ HERO ════ -->
+<div class="hero" data-section="Track 1: AX 업무혁신 과정">
+  <div class="hero-badge">Track 01 · 16주 · 비개발자 과정</div>
+  <h1>AX 업무혁신 과정</h1>
+  <p class="hero-sub">n8n 자동화 → AI 에이전트 → RAG 지식검색 → Google Opal</p>
+  <div class="hero-kpi">
+    <div class="hero-kpi-item"><span class="hero-kpi-num">16주</span><span class="hero-kpi-lbl">단계별<br>커리큘럼</span></div>
+    <div class="hero-kpi-item"><span class="hero-kpi-num">n8n</span><span class="hero-kpi-lbl">노코드<br>자동화 허브</span></div>
+    <div class="hero-kpi-item"><span class="hero-kpi-num">RAG</span><span class="hero-kpi-lbl">AI 지식<br>검색 시스템</span></div>
+    <div class="hero-kpi-item"><span class="hero-kpi-num">Opal</span><span class="hero-kpi-lbl">AI 미니앱<br>빌더</span></div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════ 과정 개요 ════ -->
+<section data-section="과정 개요">
+  <div class="eyebrow">Course Overview</div>
+  <h2>과정 개요</h2>
+  <p><strong>대상:</strong> 여신·리스크·영업·WM 등 비개발자 전 직원<br>
+  <strong>전제조건:</strong> 없음 — 엑셀·이메일 사용 가능이면 충분합니다</p>
+
+  <div class="callout green">
+    <strong>학습 원칙: 천천히, 그러나 확실하게</strong><br>
+    처음 9주는 n8n 자동화만 집중합니다. 클릭으로 워크플로를 만들고, 실제 업무에 바로 쓸 수 있는 자동화를 완성하는 것이 1차 목표입니다. RAG와 AI 심화는 자동화에 익숙해진 후반부에 자연스럽게 도입됩니다.
+  </div>
+
+  <!-- 학습 여정 -->
+  <h3>학습 여정 한눈에 보기</h3>
+  <div style="display:flex;flex-direction:column;gap:0;margin:12px 0">
+    <div style="display:flex;align-items:stretch;gap:0">
+      <div style="width:3px;background:var(--black);border-radius:2px;flex-shrink:0;margin:0 14px 0 5px"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;padding-bottom:8px">
+
+        <div style="background:var(--light);border-radius:9px;padding:11px 13px;border:1px solid var(--border)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#aaa;margin-bottom:3px">PHASE 1 · W1~3</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px">⚡ n8n 기초 — 첫 자동화</div>
+          <div style="font-size:11px;color:var(--gray)">여신 신청 접수 확인 이메일 자동화 · 연체 고객 등급별 분류 발송 · 대출 서류 폴더 자동 생성</div>
+        </div>
+
+        <div style="background:var(--light);border-radius:9px;padding:11px 13px;border:1px solid var(--border)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#aaa;margin-bottom:3px">PHASE 2 · W4~6</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px">⚡ n8n 응용 — AI Agent + 조건 분기</div>
+          <div style="font-size:11px;color:var(--gray)">민원 이메일 AI 자동 분류 · 여신 금액별 승인 경로 분기 · 재무제표 위험도 분석 · 만기 고객 개인화 안내</div>
+        </div>
+
+        <div style="background:var(--light);border-radius:9px;padding:11px 13px;border:1px solid var(--border)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#aaa;margin-bottom:3px">PHASE 3 · W7~9</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px">⚡ n8n 고급 — 스케줄·멀티채널·보안</div>
+          <div style="font-size:11px;color:var(--gray)">일일 여신 현황 브리핑 자동화 · 연체율·한도 초과 즉시 알림 · 감사 로그 자동 기록</div>
+        </div>
+
+        <div style="background:#eff6ff;border-radius:9px;padding:11px 13px;border:1px solid #bfdbfe">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#1d4ed8;margin-bottom:3px">PHASE 4 · W10~12</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px">🧠 RAG 도입 — 규정 문서 AI 검색</div>
+          <div style="font-size:11px;color:#1d4ed8">여신취급세칙 챗봇 · 조항 번호 정확 검색 · 규정 Q&A Slack 연동 (출처 인용 자동화)</div>
+        </div>
+
+        <div style="background:#faf5ff;border-radius:9px;padding:11px 13px;border:1px solid #e9d5ff">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#7c3aed;margin-bottom:3px">PHASE 5 · W13~14</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px">🪄 Google Opal — AI 미니앱</div>
+          <div style="font-size:11px;color:#7c3aed">임원 조간 브리핑 생성기 · 여신 의견서 초안기 · 상담 스크립트 개인화기 · n8n 자동 후처리 연결</div>
+        </div>
+
+        <div style="background:var(--black);border-radius:9px;padding:11px 13px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#555;margin-bottom:3px">PHASE 6 · W15~16</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">🎓 PoC 구현 & 최종 발표</div>
+          <div style="font-size:11px;color:#666">부서 실제 업무 적용 · Before/After 시간 절감 수치 발표</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════ n8n이란? ════ -->
+<section data-section="n8n이란?">
+  <div class="eyebrow">Tool Introduction</div>
+  <h2>n8n이란?</h2>
+  <p>n8n은 <strong>"만약 ~이 발생하면, ~을 한다"</strong>는 규칙을 클릭으로 만드는 도구입니다. 코딩 없이 수백 개의 앱·서비스를 연결해 반복 업무를 자동화합니다.</p>
+
+  <div class="callout orange">
+    <strong>쉽게 이해하기:</strong> 엑셀 매크로처럼 반복 작업을 자동화하는데, 엑셀 안이 아니라 <em>앱과 앱 사이</em>를 연결합니다. 예: "구글 시트에 새 행이 생기면 → 자동으로 이메일 발송"
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="concept-head">🔌 트리거 (Trigger)</div>
+      <div class="concept-body">자동화를 <strong>시작시키는 신호</strong>.<br>은행 예시: 여신 신청 시트 새 행 추가 / 매일 오전 8시 / 연체 고객 이메일 수신 / 이상거래 감지 Webhook</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-head">⚙️ 액션 (Action)</div>
+      <div class="concept-body">트리거 이후 <strong>실행할 작업</strong>.<br>은행 예시: 접수 확인 이메일 발송 / 심사역 캘린더 일정 등록 / 팀장 Slack DM / 규정 조항 검색</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-head">🔀 조건 분기 (IF/Switch)</div>
+      <div class="concept-body">상황에 따라 <strong>다른 경로 선택</strong>.<br>은행 예시: 여신 1억 미만 → 자동승인 / 1억~10억 → 팀장승인 / 10억↑ → 본부위임</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-head">🤖 AI Agent Node</div>
+      <div class="concept-body">Claude AI를 <strong>워크플로 안에 내장</strong>.<br>은행 예시: 재무제표 위험도 요약 / 민원 유형 자동 분류 / 만기 고객 맞춤 안내문 생성</div>
+    </div>
+  </div>
+
+  <h3>n8n vs 기타 도구 비교</h3>
+  <table class="cmp-table">
+    <thead><tr><th>도구</th><th>특징</th><th>금융 적합성</th></tr></thead>
+    <tbody>
+      <tr><td><strong>n8n</strong></td><td>오픈소스, 온프레미스 가능, AI Agent 내장</td><td><span class="badge-g">높음 — 보안 자체 통제 가능</span></td></tr>
+      <tr><td>Zapier</td><td>사용 편의성 최고, 클라우드 전용</td><td><span class="badge-r">낮음 — 데이터 외부 전송</span></td></tr>
+      <tr><td>Make</td><td>시각적 편집, 클라우드 전용</td><td><span class="badge-r">낮음 — 데이터 외부 전송</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════ 커리큘럼 ════ -->
+<section data-section="주차별 커리큘럼">
+  <div class="eyebrow">Curriculum · 16 Weeks</div>
+  <h2>주차별 커리큘럼</h2>
+
+  <!-- ─ PHASE 1 ─ -->
+  <div class="phase-banner">
+    <span class="phase-num">PHASE 1</span>
+    <div class="phase-info">
+      <div class="phase-title">⚡ n8n 기초 — 첫 자동화 만들기</div>
+      <div class="phase-sub">설치부터 실제 동작하는 워크플로 완성까지</div>
+    </div>
+    <span class="phase-wks">W1 ~ W3</span>
+  </div>
+  <table class="week-table">
+    <thead><tr><th>주</th><th>주제 및 실습</th></tr></thead>
+    <tbody>
+      <tr><td>W1</td><td>
+        <div class="week-title">🛠️ n8n 설치 & 첫 워크플로</div>
+        <div class="week-detail">n8n Cloud 계정 생성 (또는 회사 서버 Docker 설치). 화면 구성 익히기: 캔버스·노드·실행 로그. Credential(인증) 등록 방법.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>여신 신청 접수 확인 자동화</em> — 영업점 직원이 Sheets에 여신 신청 정보(신청인·금액·종류)를 입력하면 → 신청인에게 "접수번호 XXX, 담당 심사역 XXX 배정 완료" 확인 이메일 자동 발송. 기존 전화·수동 이메일 방식 대체.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt blue">Google Sheets</span><span class="tt blue">Gmail</span></div>
+      </td></tr>
+      <tr><td>W2</td><td>
+        <div class="week-title">🛠️ 노드 탐험 — 데이터 변환과 필터</div>
+        <div class="week-detail">Set·Edit Fields·Filter·Merge 노드 실습. 실행 이력 확인·오류 재시도 방법.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>연체 고객 등급별 자동 안내 발송</em> — 연체 관리 Sheets에서 연체일수 기준으로 필터링 (30일 이하·31~90일·91일 초과) → 등급별로 다른 안내문 이메일 자동 발송. 담당자별(지점 A/B/C) 분류 동시 처리.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt blue">Google Sheets</span><span class="tt blue">Gmail</span></div>
+      </td></tr>
+      <tr><td>W3</td><td>
+        <div class="week-title">🛠️ Google Workspace 완전 연동</div>
+        <div class="week-detail">Google Drive·Docs·Sheets·Gmail·Calendar·Chat 노드 총정리.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>대출 서류 접수 자동 폴더 체계 생성</em> — Forms로 대출 신청 → Drive에 "고객명_신청일" 폴더 자동 생성 + 체크리스트 Docs 자동 생성 + 담당 심사역 Calendar에 검토 일정 자동 등록 + Chat으로 팀 채널 알림. 서류 접수부터 일정 배정까지 원터치 완성.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt blue">Google Workspace</span><span class="tt blue">Google Forms</span></div>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <div class="n8n-flow">
+    <div class="n8n-title">⚡ W1 실습 워크플로 — 여신 신청 접수 확인 자동 발송</div>
+    <div class="n8n-steps">
+      <div class="n8n-step"><span class="n8n-node nn-t">Google Sheets Trigger</span><span class="n8n-edge">→</span><span class="n8n-desc">영업점 직원이 여신 신청 시트에 신청인·금액·종류 입력 → 새 행 감지</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-c">Set Node</span><span class="n8n-edge">→</span><span class="n8n-desc">접수번호 자동 생성, 배정 심사역·예상 처리일 필드 정리</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-o">Gmail Node</span><span class="n8n-edge">→</span><span class="n8n-desc">신청인에게 "접수번호 2026-0412, 담당 심사역 김OO 배정 완료" 확인 이메일 자동 발송</span></div>
+    </div>
+  </div>
+
+  <!-- ─ PHASE 2 ─ -->
+  <div class="phase-banner" style="margin-top:28px">
+    <span class="phase-num">PHASE 2</span>
+    <div class="phase-info">
+      <div class="phase-title">⚡ n8n 응용 — AI 연결 & 조건 분기</div>
+      <div class="phase-sub">Claude API를 워크플로에 내장해 판단력을 부여</div>
+    </div>
+    <span class="phase-wks">W4 ~ W6</span>
+  </div>
+  <table class="week-table">
+    <thead><tr><th>주</th><th>주제 및 실습</th></tr></thead>
+    <tbody>
+      <tr><td>W4</td><td>
+        <div class="week-title">🤖 AI Agent Node — Claude 연결</div>
+        <div class="week-detail">n8n AI Agent Node 소개. Claude API Key 등록 → 첫 연결.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>고객 민원·문의 이메일 자동 분류 라우팅</em> — 수신 이메일을 Claude가 내용 분석 후 유형 자동 분류 (대출문의 / 카드분실 / 이자항의 / 부정거래신고 / 일반문의) → 각 담당 팀 이메일로 자동 포워딩 + Sheets에 분류 이력 기록. 하루 수십 건 수작업 분류 → 즉시 처리.</div>
+        <div class="week-tools"><span class="tt orange">n8n AI Agent</span><span class="tt black">Claude API</span><span class="tt blue">Gmail</span></div>
+      </td></tr>
+      <tr><td>W5</td><td>
+        <div class="week-title">🔀 IF·Switch — 조건별 자동 처리</div>
+        <div class="week-detail">IF 노드(2-way)·Switch 노드(N-way) 실습. 에러 핸들링: 실패 시 Slack 알림.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>여신 신청 금액·등급별 자동 승인 경로 분기</em> — 신청 금액 + Claude 신용등급 요약 결합 → Switch 3경로: ① 1억 미만·우량등급 → "자동 승인 처리 + 신청자 즉시 통보" ② 1억~10억 또는 중간등급 → "팀장 승인 요청 이메일 + Slack DM" ③ 10억 초과 또는 저신용 → "본부 심사 위임 이메일 + 담당임원 알림". 수작업 결재 라인 축소.</div>
+        <div class="week-tools"><span class="tt orange">n8n IF/Switch</span><span class="tt black">Claude API</span><span class="tt blue">Slack</span></div>
+      </td></tr>
+      <tr><td>W6</td><td>
+        <div class="week-title">📊 실무 파이프라인 — 부서별 자동화 완성</div>
+        <div class="week-detail">각자 부서 실제 데이터로 end-to-end 파이프라인 완성.<br><br>
+        <strong>🏦 여신·리스크팀 실습:</strong> <em>기업 재무제표 자동 위험도 분석</em> — Sheets에 기업명·재무 수치 입력 → Claude가 부채비율·유동비율·영업이익률 해석 + 업종 평균 대비 위험 등급 산정 → 등급별 자동 처리 (정상/주의/위험).<br>
+        <strong>🏦 영업·WM팀 실습:</strong> <em>만기 도래 예금 고객 개인화 안내</em> — Sheets 만기 목록 → Claude가 고객별 자산 규모·성향에 맞는 재예치·전환 상품 추천 문안 생성 → 개인별 이메일 대량 발송.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt black">Claude API</span><span class="tt blue">Gmail</span><span class="tt blue">Sheets</span></div>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <div class="n8n-flow">
+    <div class="n8n-title">⚡ W5 실습 워크플로 — 여신 신청 금액·등급별 자동 승인 경로 분기</div>
+    <div class="n8n-steps">
+      <div class="n8n-step"><span class="n8n-node nn-t">Google Sheets Trigger</span><span class="n8n-edge">→</span><span class="n8n-desc">신규 여신 신청 행 감지 (신청인·금액·업종·신용등급 포함)</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-ai">Claude AI Agent</span><span class="n8n-edge">→</span><span class="n8n-desc">업종 위험도·재무 특이사항 1문단 요약 생성</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-c">Switch Node</span><span class="n8n-edge">→</span><span class="n8n-desc">① 1억↓·우량 → 자동승인   ② 1억~10억 또는 중간등급 → 팀장승인   ③ 10억↑ 또는 저신용 → 본부위임</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-o">Gmail + Slack</span><span class="n8n-edge">→</span><span class="n8n-desc">경로별 담당자에게 Claude 요약 + 승인 요청 자동 발송 / 신청자에게 처리 결과 통보</span></div>
+    </div>
+  </div>
+
+  <!-- ─ PHASE 3 ─ -->
+  <div class="phase-banner" style="margin-top:28px">
+    <span class="phase-num">PHASE 3</span>
+    <div class="phase-info">
+      <div class="phase-title">⚡ n8n 고급 — 스케줄·멀티채널·보안·MCP</div>
+      <div class="phase-sub">자동화 시스템을 24/7 무인으로 운영하는 수준</div>
+    </div>
+    <span class="phase-wks">W7 ~ W9</span>
+  </div>
+  <table class="week-table">
+    <thead><tr><th>주</th><th>주제 및 실습</th></tr></thead>
+    <tbody>
+      <tr><td>W7</td><td>
+        <div class="week-title">⏰ Scheduler & Webhook — 자동 실행 트리거</div>
+        <div class="week-detail">Scheduler(지정 시간 자동 실행)·Webhook(외부 이벤트 수신) 개념과 실습.<br><br>
+        <strong>🏦 은행 실습 — Scheduler:</strong> <em>일일 여신 현황 자동 브리핑</em> — 매일 오전 7:50 자동 실행 → 전날 여신 Sheets 수집 (신규 신청건·승인건·거절건·미처리건) → Claude가 3줄 브리핑 + 전일 대비 증감 요약 → 08:00 팀장 이메일 + 팀 Chat 채널 동시 발송.<br>
+        <strong>🏦 은행 실습 — Webhook:</strong> <em>인터넷뱅킹 이상거래 즉시 알림</em> — 코어뱅킹에서 이상거래 감지 시 n8n Webhook 호출 → 담당자 Slack DM 즉시 발송.</div>
+        <div class="week-tools"><span class="tt orange">n8n Scheduler</span><span class="tt orange">n8n Webhook</span><span class="tt black">Claude API</span></div>
+      </td></tr>
+      <tr><td>W8</td><td>
+        <div class="week-title">📱 멀티채널 자동화 — Slack·Chat 동시 발송</div>
+        <div class="week-detail">Slack·Google Chat 노드 실습. 메시지 포맷 커스터마이징 (블록·버튼 포함).<br><br>
+        <strong>🏦 은행 실습:</strong> <em>리스크 지표 임계값 초과 즉시 알림 시스템</em> — 매시간 리스크 지표 Sheets 자동 점검: ① 부서별 연체율 3% 초과 → 리스크팀 Slack #경보 채널 + 담당팀장 DM ② 여신 한도 소진율 90% 초과 → 본부 Chat 채널 경고 + 이메일 동시 발송 ③ 정상 범위 복귀 시 자동 해제 메시지. 알림 내용에 Claude 생성 원인 분석 1문장 포함.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt teal">Slack</span><span class="tt blue">Google Chat</span><span class="tt blue">Gmail</span></div>
+      </td></tr>
+      <tr><td>W9</td><td>
+        <div class="week-title">🔒 MCP 연동 & 보안·감사 설정</div>
+        <div class="week-detail">n8n MCP로 Claude와 Google Workspace 직접 연결. Credential 암호화 관리, 워크플로 오류 시 자동 알림·재시도 설정.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>자동화 실행 감사 로그 시스템 구축</em> — 모든 자동화 실행 이력을 Sheets에 기록 (실행시각·트리거 유형·처리 건수·이상 여부). 민감정보(주민번호·계좌번호) 마스킹 노드 삽입 — AI에 전달되기 전 자동 치환. 월말 감사팀 제출용 자동화 운영 리포트 Docs 자동 생성.</div>
+        <div class="week-tools"><span class="tt orange">n8n MCP</span><span class="tt black">Claude MCP</span><span class="tt blue">Google Workspace</span></div>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <div class="n8n-flow">
+    <div class="n8n-title">⚡ W7 실습 워크플로 — 일일 여신 현황 자동 브리핑 (매일 08:00)</div>
+    <div class="n8n-steps">
+      <div class="n8n-step"><span class="n8n-node nn-t">Schedule Trigger</span><span class="n8n-edge">→</span><span class="n8n-desc">매일 오전 07:50 자동 실행</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-a">Google Sheets Node</span><span class="n8n-edge">→</span><span class="n8n-desc">전날 여신 현황 수집: 신규 신청 12건, 승인 8건, 거절 2건, 미처리 2건, 총 신청액 87억</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-ai">Claude AI Agent</span><span class="n8n-edge">→</span><span class="n8n-desc">"전일 대비 신청 +3건 증가, 미처리 2건 기한 내 처리 요망, 승인율 80% 유지" 3줄 브리핑 생성</span></div>
+      <div class="n8n-step"><span class="n8n-node nn-o">Gmail + Google Chat</span><span class="n8n-edge">→</span><span class="n8n-desc">팀장 이메일 + 여신팀 Chat 채널 동시 발송 (08:00)</span></div>
+    </div>
+  </div>
+
+  <!-- ─ PHASE 4 ─ -->
+  <div class="phase-banner" style="margin-top:28px;background:#1e3a5f">
+    <span class="phase-num">PHASE 4</span>
+    <div class="phase-info">
+      <div class="phase-title">🧠 RAG 도입 — 규정 문서 AI 검색 시스템</div>
+      <div class="phase-sub">내부 문서를 AI가 정확하게 찾아주는 지식베이스 구축</div>
+    </div>
+    <span class="phase-wks">W10 ~ W12</span>
+  </div>
+
+  <div class="callout blue" style="margin-top:10px">
+    <strong>RAG가 뭔가요?</strong><br>
+    Retrieval-Augmented Generation — "찾아서 읽고 답하기". 규정집·매뉴얼·보고서를 AI가 직접 검색해 근거 있는 답변을 생성합니다. "여신취급세칙 제23조의 내용은?" 같은 질문에 정확한 출처와 함께 답합니다. n8n이 이 전 과정을 자동으로 연결합니다.
+  </div>
+
+  <table class="week-table">
+    <thead><tr><th>주</th><th>주제 및 실습</th></tr></thead>
+    <tbody>
+      <tr><td>W10</td><td>
+        <div class="week-title">🔍 Vector RAG 기초 — 규정 PDF 검색 시스템</div>
+        <div class="week-detail"><strong>개념:</strong> 문서를 잘게 나눠(청킹) 의미 벡터로 저장 → 질문과 유사한 부분을 검색.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>여신 규정집 AI 질의응답 챗봇</em> — 여신취급세칙·내부 심사 매뉴얼 PDF를 n8n으로 청킹·임베딩·Supabase 저장. 완성 후 테스트: "개인사업자 신용대출 최대 한도는?", "담보 인정 비율 LTV는 몇 %?", "보증서 대출 취급 조건은?" → 출처 규정 조항 번호와 함께 즉시 답변. 기존 규정집 검색 수작업 대비 효과 직접 비교.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt black">OpenAI Embed</span><span class="tt green">Supabase</span><span class="tt black">Claude API</span></div>
+      </td></tr>
+      <tr><td>W11</td><td>
+        <div class="week-title">🔍 Hybrid 검색 — 키워드 + 의미 동시 검색</div>
+        <div class="week-detail"><strong>개념:</strong> 벡터 검색(의미 유사도)과 BM25(키워드 매칭)를 함께 사용 → 두 가지 방식의 검색 결과를 RRF로 합산.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>조항 번호 + 의미 동시 검색 비교</em> — 벡터 단독 검색 vs Hybrid 검색 직접 비교: "여신취급세칙 제23조" (조항 번호 정확 매칭), "담보 부족 시 예외 인정 조건" (의미 유사 검색), "BBB등급 중소기업 한도" (키워드+의미 혼합). 벡터 단독은 조항 번호 검색에서 놓치는 경우가 많음을 실습으로 체험.</div>
+        <div class="week-tools"><span class="tt orange">n8n Code</span><span class="tt green">Supabase</span><span class="tt black">BM25·RRF</span></div>
+      </td></tr>
+      <tr><td>W12</td><td>
+        <div class="week-title">🔍 Reranker & 실무 적용 — 규정 Q&A 시스템 완성</div>
+        <div class="week-detail"><strong>개념:</strong> 검색 결과 상위 20건 중 Reranker가 가장 관련 높은 Top 3를 최종 선별 → 할루시네이션 대폭 감소.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>여신·내부통제 규정 통합 Q&A 시스템</em> — Cohere Rerank 적용 후 Claude가 규정 조항 번호·페이지 인용하며 답변. 실제 업무 질문 20건 테스트: "부동산 PF 대출 취급 시 내부 승인 절차는?", "연체 발생 후 담보 처분 기한은?", "개인정보 보호 의무 위반 시 제재 수위는?". Slack 연동으로 팀원 누구나 질문 가능한 사내 규정 챗봇 완성.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt purple">Cohere Rerank</span><span class="tt black">Claude API</span><span class="tt teal">Slack</span></div>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <!-- RAG 흐름도 -->
+  <div class="rag-block">
+    <div class="rag-title">🧠 W12 완성 시스템 — 여신·규정 통합 Q&A (n8n 전 단계 연결)</div>
+    <div class="rag-row">
+      <div class="rag-box b-dark">❓ 직원 Slack 질문<br><small style="font-weight:400;opacity:.7">"BBB등급 중소기업 여신 한도는?"</small></div>
+      <div class="rag-arrow">→</div>
+      <div class="rag-box">임베딩 생성<br><small style="color:#666">OpenAI</small></div>
+      <div class="rag-arrow">→</div>
+      <div class="rag-box">병렬 검색<br><small style="color:#666">Top-10씩</small></div>
+    </div>
+    <div class="rag-row">
+      <div class="rag-box b-blue" style="flex:1">벡터 검색<br><small style="opacity:.8">의미 유사 조항 탐색</small></div>
+      <div class="rag-arrow">⊕</div>
+      <div class="rag-box b-orange" style="flex:1">BM25 검색<br><small style="opacity:.8">"BBB등급" 키워드 정확 매칭</small></div>
+      <div class="rag-arrow">→</div>
+      <div class="rag-box b-purple" style="flex:1">RRF 결합<br><small style="opacity:.8">두 결과 순위 합산</small></div>
+    </div>
+    <div class="rag-row">
+      <div class="rag-box b-green">Cohere Reranker → Top 3 선별</div>
+      <div class="rag-arrow">→</div>
+      <div class="rag-box b-dark">Claude 답변 생성<br><small style="opacity:.7">"여신취급세칙 제23조 2항에 의거…"</small></div>
+      <div class="rag-arrow">→</div>
+      <div class="rag-box">Slack 자동 발송<br><small style="color:#666">출처 조항 포함</small></div>
+    </div>
+    <div class="rag-note">적용 가능 문서: 여신취급세칙 · 내부통제 규정 · 금융소비자보호법 매뉴얼 · 상품별 약관 · 감사 지침. 문서만 교체하면 동일 파이프라인 재사용.</div>
+  </div>
+
+  <!-- ─ PHASE 5 ─ -->
+  <div class="phase-banner" style="margin-top:28px;background:#3b0764">
+    <span class="phase-num">PHASE 5</span>
+    <div class="phase-info">
+      <div class="phase-title">🪄 Google Opal — AI 미니앱 빌더</div>
+      <div class="phase-sub">자연어로 AI 앱 프로토타입을 수분 만에 완성</div>
+    </div>
+    <span class="phase-wks">W13 ~ W14</span>
+  </div>
+
+  <div class="callout purple" style="margin-top:10px">
+    <strong>Google Opal이란?</strong><br>
+    "보고서 요약기 만들어줘"라고 입력하면 Gemini AI가 실제 동작하는 웹 앱을 자동 생성하는 Google Labs 실험 도구. 완성된 앱은 링크로 팀원과 바로 공유 가능. n8n을 충분히 익힌 지금, Opal로 빠른 AI 앱 프로토타이핑을 추가 학습합니다.
+  </div>
+
+  <table class="week-table">
+    <thead><tr><th>주</th><th>주제 및 실습</th></tr></thead>
+    <tbody>
+      <tr><td>W13</td><td>
+        <div class="week-title">🪄 Opal 입문 & 은행 업무 미니앱 4종</div>
+        <div class="week-detail">Opal 갤러리 탐색 → 자연어로 첫 앱 생성 → 비주얼 노드 편집.<br><br>
+        <strong>🏦 은행 미니앱 4종 실습:</strong><br>
+        ① <em>임원 조간 브리핑 생성기</em> — 전날 여신·리스크 수치 텍스트 붙여넣기 → Gemini가 1페이지 임원 브리핑 HTML 자동 생성<br>
+        ② <em>여신 심사 의견서 초안기</em> — 차주명·업종·금액·신용등급 입력 → 심사 의견서 초안 자동 완성<br>
+        ③ <em>고객 상담 스크립트 개인화기</em> — 고객 연령·자산·관심 상품 입력 → 맞춤 상담 멘트 + 예상 Q&A 생성<br>
+        ④ <em>내부 보고서 핵심 요약기</em> — 긴 보고서 붙여넣기 → 3줄 요약 + 리스크 포인트 추출. 부서별 맞춤 앱 1개 완성.</div>
+        <div class="week-tools"><span class="tt purple">Google Opal</span><span class="tt black">Gemini Flash</span><span class="tt blue">Google Docs</span></div>
+      </td></tr>
+      <tr><td>W14</td><td>
+        <div class="week-title">🪄 Opal → n8n Webhook 연결</div>
+        <div class="week-detail"><strong>연동 구조:</strong> Opal(프론트 AI 앱) → Webhook → n8n(백엔드 자동화). Opal→n8n 단방향 Push만 지원.<br><br>
+        <strong>🏦 은행 실습:</strong> <em>여신 의견서 Opal 생성 → n8n 자동 후처리</em> — Opal 미니앱에서 심사역이 의견서 초안 완성 → Webhook으로 n8n 전달 → n8n이 ① Drive "여신심사_2026" 폴더 자동 저장 ② 팀장 Slack "초안 검토 요청" 알림 ③ Sheets 심사 현황 행 자동 업데이트. 심사역이 Opal 하나만 쓰면 나머지는 자동 처리.</div>
+        <div class="week-tools"><span class="tt purple">Google Opal</span><span class="tt orange">n8n Webhook</span><span class="tt blue">Drive</span><span class="tt teal">Slack</span></div>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─ PHASE 6 ─ -->
+  <div class="phase-banner" style="margin-top:28px">
+    <span class="phase-num">PHASE 6</span>
+    <div class="phase-info">
+      <div class="phase-title">🎓 PoC 구현 & 최종 발표</div>
+      <div class="phase-sub">실제 업무에 적용한 자동화 시스템을 완성하고 발표</div>
+    </div>
+    <span class="phase-wks">W15 ~ W16</span>
+  </div>
+  <table class="week-table">
+    <thead><tr><th>주</th><th>주제 및 실습</th></tr></thead>
+    <tbody>
+      <tr><td>W15</td><td>
+        <div class="week-title">🔨 PoC 구현 — 실제 업무 자동화 완성</div>
+        <div class="week-detail">부서 실제 데이터로 n8n 파이프라인 구현. 필요 시 RAG 또는 Opal 결합. 민감정보 필터링·에러 핸들링·보안 점검.<br><br>
+        <strong>🏦 부서별 PoC 예시:</strong> 여신팀 — 신청접수~승인 분기~통보 전 과정 / 리스크팀 — 연체율 모니터링 + 임계값 알림 / 영업팀 — 만기 고객 개인화 안내 + 상품 추천 / WM팀 — 포트폴리오 월간 리포트 자동 생성. Before 수작업 소요 시간 vs After 자동화 소요 시간 직접 측정 기록.</div>
+        <div class="week-tools"><span class="tt orange">n8n</span><span class="tt black">Claude API</span><span class="tt purple">Opal (선택)</span></div>
+      </td></tr>
+      <tr><td>W16</td><td>
+        <div class="week-title">🎓 최종 발표 & 수료</div>
+        <div class="week-detail">8분 발표: ① 해결한 업무 문제 (Before 수작업 시간·오류 발생 상황) ② n8n 워크플로 라이브 데모 ③ Before/After 시간 절감 수치 공유 ④ 타 부서 확산 가능성 제안. 동료 피드백 세션. 수료증 수여.<br><br>
+        <strong>발표 우수 사례 예시:</strong> "여신 접수 확인 이메일 발송 — 하루 30분 → 0분", "연체 고객 분류 안내 — 2시간 → 자동", "규정 검색 답변 — 30분 → 30초".</div>
+        <div class="week-tools"><span class="tt">라이브 데모</span><span class="tt blue">Google Slides</span></div>
+      </td></tr>
+    </tbody>
+  </table>
+
+</section>
+
+<div class="divider"></div>
+
+<!-- ════ n8n 핵심 노드 레퍼런스 ════ -->
+<section data-section="n8n 핵심 노드 레퍼런스">
+  <div class="eyebrow">Reference</div>
+  <h2>n8n 핵심 노드 레퍼런스</h2>
+  <p>수업 중 가장 자주 사용하는 노드 목록입니다.</p>
+
+  <div class="skill-list">
+    <div class="skill-item">
+      <div class="skill-icon">🔌</div>
+      <div>
+        <div class="skill-name">트리거 노드 — 자동화 시작점</div>
+        <div class="skill-desc">Google Sheets Trigger (새 행), Gmail Trigger (새 메일), Schedule Trigger (지정 시간), Webhook (외부 호출), Google Drive Trigger (파일 업로드)</div>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-icon">⚙️</div>
+      <div>
+        <div class="skill-name">데이터 처리 노드</div>
+        <div class="skill-desc">Set (필드 추가·수정), Edit Fields (이름 변경), Filter (조건 필터링), IF / Switch (분기), Merge (데이터 합치기), Split In Batches (대량 처리), Code (JS 코드 직접 작성)</div>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-icon">🤖</div>
+      <div>
+        <div class="skill-name">AI 노드</div>
+        <div class="skill-desc">AI Agent Node (Claude·GPT 연결, 툴 사용 가능), OpenAI Node (임베딩·완성), HTTP Request (Cohere Rerank API 등 외부 AI API 직접 호출)</div>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-icon">📤</div>
+      <div>
+        <div class="skill-name">출력·발송 노드</div>
+        <div class="skill-desc">Gmail (이메일 발송), Slack (메시지·알림), Google Chat, Google Docs (문서 생성), Google Sheets (데이터 기록), Google Drive (파일 저장), Supabase (DB 읽기/쓰기)</div>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-icon">🔒</div>
+      <div>
+        <div class="skill-name">보안·관리 노드</div>
+        <div class="skill-desc">Credential Manager (API 키 암호화 저장), Error Trigger (오류 발생 시 알림), Wait (딜레이), Respond to Webhook (응답 반환)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════ 수료 역량 ════ -->
+<section data-section="수료 시 보유 역량">
+  <div class="eyebrow">Outcomes</div>
+  <h2>수료 시 보유 역량</h2>
+
+  <div class="out-card">
+    <div class="out-num">01</div>
+    <div>
+      <div class="out-ttl">n8n 워크플로 독립 설계·운영</div>
+      <div class="out-desc">여신 접수 확인부터 연체 고객 분류 안내까지 — 반복되는 은행 업무를 코드 없이 자동화. Google Workspace 전체를 n8n으로 연결해 부서 맞춤 파이프라인을 혼자 구축·수정 가능.</div>
+    </div>
+  </div>
+  <div class="out-card">
+    <div class="out-num">02</div>
+    <div>
+      <div class="out-ttl">Claude AI 연동 은행 업무 자동화</div>
+      <div class="out-desc">민원 이메일 자동 분류·재무제표 위험도 요약·만기 고객 개인화 안내문 생성을 n8n + Claude로 자동화. 금액·등급 조건 분기로 여신 승인 경로도 자동 처리.</div>
+    </div>
+  </div>
+  <div class="out-card">
+    <div class="out-num">03</div>
+    <div>
+      <div class="out-ttl">24/7 자동 모니터링 시스템</div>
+      <div class="out-desc">일일 여신 현황 오전 브리핑 자동 발송·연체율·한도 소진율 임계값 초과 즉시 Slack 알림·자동화 실행 감사 로그 월별 리포트까지 무인 운영 체계 구축.</div>
+    </div>
+  </div>
+  <div class="out-card">
+    <div class="out-num">04</div>
+    <div>
+      <div class="out-ttl">사내 규정 AI 검색 시스템 (RAG)</div>
+      <div class="out-desc">"BBB등급 중소기업 여신 한도는?", "담보 처분 기한은?" — 여신취급세칙·내부통제 규정을 Hybrid RAG + Reranker로 검색해 조항 번호 인용 답변. Slack 연동으로 팀원 누구나 사용 가능.</div>
+    </div>
+  </div>
+  <div class="out-card">
+    <div class="out-num">05</div>
+    <div>
+      <div class="out-ttl">Google Opal 은행 업무 미니앱</div>
+      <div class="out-desc">임원 조간 브리핑 생성기·여신 의견서 초안기·고객 상담 스크립트 개인화기를 Opal로 제작. 완성된 앱을 n8n Webhook과 연결해 Drive 저장·팀장 알림까지 자동 처리.</div>
+    </div>
+  </div>
+  <div class="out-card">
+    <div class="out-num">06</div>
+    <div>
+      <div class="out-ttl">부서 업무 자동화 PoC 1건 (절감 수치 포함)</div>
+      <div class="out-desc">실제 부서 데이터로 완성한 n8n 워크플로. "여신 접수 확인 이메일 — 하루 30분 → 0분", "규정 검색 — 30분 → 30초" 등 Before/After 절감 수치를 측정해 발표. 운영 문서 완비.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════ 기대 효과 ════ -->
+<section data-section="기대 효과">
+  <div class="eyebrow">Expected Value</div>
+  <h2>기대 효과</h2>
+  <div class="kpi">
+    <div class="kpi-card"><div class="kpi-num">75%+</div><div class="kpi-lbl">여신·민원·연체<br>반복업무 시간 절감</div></div>
+    <div class="kpi-card"><div class="kpi-num">Zero</div><div class="kpi-lbl">규정 오답<br>(출처 조항 인용)</div></div>
+    <div class="kpi-card"><div class="kpi-num">16주</div><div class="kpi-lbl">비개발자<br>전 직원 완성 가능</div></div>
+  </div>
+
+  <div class="callout orange" style="margin-top:14px">
+    <strong>절감 시간 사례 (수료생 목표치):</strong><br>
+    여신 접수 확인 이메일 <strong>30분/일 → 0분</strong> · 연체 고객 분류 안내 <strong>2시간/주 → 자동</strong> · 규정 조항 검색 <strong>30분 → 30초</strong> · 월말 현황 리포트 작성 <strong>3시간 → 5분</strong>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════ 부록 ════ -->
+<section data-section="부록 목차">
+  <div class="eyebrow">Appendix</div>
+  <h2>부록 목차</h2>
+  <div style="display:flex;flex-direction:column;gap:6px;margin:12px 0">
+    <a href="ERBank_부록A_n8n_매뉴얼.html" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--light);border-radius:10px;border:1px solid var(--border);text-decoration:none;color:var(--black)">
+      <span style="font-size:16px">⚡</span>
+      <div><div style="font-size:12px;font-weight:700">부록 A — n8n 사용법 완전 매뉴얼</div><div style="font-size:11px;color:var(--gray)">설치 · 핵심 노드 레퍼런스 · Google Workspace 연동 레시피</div></div>
+    </a>
+    <a href="ERBank_부록B_RAG_가이드.html" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--light);border-radius:10px;border:1px solid var(--border);text-decoration:none;color:var(--black)">
+      <span style="font-size:16px">🧠</span>
+      <div><div style="font-size:12px;font-weight:700">부록 B — Hybrid RAG & Rerank 구현 가이드</div><div style="font-size:11px;color:var(--gray)">Vector · BM25 · RRF · Cohere Reranker · n8n 파이프라인</div></div>
+    </a>
+    <a href="ERBank_부록C_GoogleOpal_매뉴얼.html" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--light);border-radius:10px;border:1px solid var(--border);text-decoration:none;color:var(--black)">
+      <span style="font-size:16px">🪄</span>
+      <div><div style="font-size:12px;font-weight:700">부록 C — Google Opal 사용법 매뉴얼</div><div style="font-size:11px;color:var(--gray)">미니앱 빌드 · Gemini 노드 · n8n Webhook 연결 패턴</div></div>
+    </a>
+    <a href="ERBank_부록D_프롬프트_패키지.html" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--light);border-radius:10px;border:1px solid var(--border);text-decoration:none;color:var(--black)">
+      <span style="font-size:16px">📝</span>
+      <div><div style="font-size:12px;font-weight:700">부록 D — 부서별 Claude 프롬프트 패키지</div><div style="font-size:11px;color:var(--gray)">여신 위험도 분석 · 민원 분류 · 만기 안내문 · 연체 통보 · 재무제표 해석 검증 프롬프트</div></div>
+    </a>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<div style="background:var(--black);color:#888;text-align:center;padding:24px 20px;font-size:11px;line-height:2;margin-bottom:var(--fh)">
+  ER은행 AX 업무혁신 과정 · Track 1 · 2026
+</div>
+
+<script>
+const sections = document.querySelectorAll('[data-section]');
+const sfT = document.getElementById('sf-t');
+const sfP = document.getElementById('sf-p');
+function update(){
+  const sy = window.scrollY;
+  const dh = document.documentElement.scrollHeight - window.innerHeight;
+  sfP.textContent = Math.round((sy / Math.max(dh, 1)) * 100) + '%';
+  let cur = sections[0]?.dataset.section || '';
+  sections.forEach(s => {
+    if(sy >= s.getBoundingClientRect().top + sy - 110) cur = s.dataset.section;
+  });
+  if(sfT.textContent !== cur) sfT.textContent = cur;
+}
+window.addEventListener('scroll', update, {passive:true});
+update();
+</script>
+</body>
+</html>
